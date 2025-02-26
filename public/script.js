@@ -304,150 +304,245 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
 
-    // Nastavení studia
-    function setupStudySession(cards, randomOrder) {
-        try {
-            if (!cards || !Array.isArray(cards) || cards.length === 0) {
-                console.error('Neplatné kartičky předané do setupStudySession:', cards);
-                alert('Chyba: Balíček neobsahuje žádné platné kartičky.');
-                return;
+// Globální proměnné pro sledování event listenerů
+let activeStudySession = null;
+let cardEventListeners = {};
+
+// Nastavení studia
+function setupStudySession(cards, randomOrder) {
+    try {
+        // Vyčistit předchozí studijní relaci, pokud existuje
+        if (activeStudySession) {
+            cleanupActiveSession();
+        }
+
+        console.log(`Inicializuji studijní relaci, náhodné pořadí: ${randomOrder}`);
+        
+        if (!cards || !Array.isArray(cards) || cards.length === 0) {
+            console.error('Neplatné kartičky předané do setupStudySession:', cards);
+            alert('Chyba: Balíček neobsahuje žádné platné kartičky.');
+            return;
+        }
+        
+        // Vytvořit nový objekt pro studijní relaci
+        activeStudySession = {
+            originalCards: [...cards],
+            currentCards: [],
+            currentIndex: 0,
+            isRandomOrder: randomOrder
+        };
+        
+        // Nastavit pořadí karet podle preference
+        if (randomOrder) {
+            activeStudySession.currentCards = shuffleArray([...cards]);
+            console.log('Kartičky byly zamíchány do náhodného pořadí');
+        } else {
+            activeStudySession.currentCards = [...cards];
+            console.log('Kartičky jsou v původním pořadí');
+        }
+        
+        // Reference na prvky UI
+        const elements = {
+            cardFront: document.getElementById('card-front'),
+            cardBack: document.getElementById('card-back'),
+            flashcard: document.getElementById('flashcard'),
+            flipBtn: document.getElementById('flipBtn'),
+            progressBar: document.getElementById('progress-bar'),
+            progressText: document.getElementById('progress-text'),
+            ratingBtns: document.getElementById('rating-btns'),
+            randomOrderToggle: document.getElementById('randomOrderToggle'),
+            endSessionBtn: document.getElementById('endSessionBtn'),
+            restartSessionBtn: document.getElementById('restartSessionBtn')
+        };
+        
+        // Kontrola, zda byly všechny potřebné elementy nalezeny
+        for (const [key, element] of Object.entries(elements)) {
+            if (!element) {
+                throw new Error(`Element ${key} nebyl nalezen`);
             }
+        }
+        
+        // Uložit elementy do aktivní relace
+        activeStudySession.elements = elements;
+        
+        // Inicializace UI
+        updateProgress(0, activeStudySession.currentCards.length);
+        showCard(activeStudySession.currentCards[0]);
+        
+        // Resetovat tlačítka hodnocení
+        elements.ratingBtns.classList.add('hidden');
+        
+        // Synchronizovat stav přepínače s aktivní relací
+        elements.randomOrderToggle.checked = randomOrder;
+        
+        // Uložit preferenci do localStorage
+        localStorage.setItem('randomOrderPreference', randomOrder);
+        
+        // Registrovat a sledovat event listenery
+        cardEventListeners = {};
+        
+        // Event listener pro přepínač náhodného pořadí
+        addEventListenerWithTracking(elements.randomOrderToggle, 'change', () => {
+            // Uložit novou preferenci
+            const newPreference = elements.randomOrderToggle.checked;
+            localStorage.setItem('randomOrderPreference', newPreference);
             
-            // Reference na přepínač náhodného pořadí
-            const randomOrderToggle = document.getElementById('randomOrderToggle');
+            console.log(`Změna náhodného pořadí: ${newPreference}`);
             
-            // Pokud je zadán randomOrder parametr, použít ho a synchronizovat s přepínačem
-            if (randomOrderToggle) {
-                // Synchronizovat stav přepínače
-                randomOrderToggle.checked = randomOrder;
-                
-                // Uložit preferenci do localStorage
-                localStorage.setItem('randomOrderPreference', randomOrder);
+            // Restartovat studium s novým nastavením
+            setupStudySession(activeStudySession.originalCards, newPreference);
+        }, 'randomToggle');
+        
+        // Event listener pro otočení karty - tlačítko
+        addEventListenerWithTracking(elements.flipBtn, 'click', flipCard, 'flipButton');
+        
+        // Event listener pro otočení karty - kliknutí na kartu
+        addEventListenerWithTracking(elements.flashcard, 'click', flipCard, 'flashcardClick');
+        
+        // Event listener pro klávesnici (Enter pro otočení karty)
+        addEventListenerWithTracking(elements.flashcard, 'keydown', (e) => {
+            if (e.key === 'Enter') {
+                flipCard();
             }
-            
-            let currentCards = [...cards];
-            if (randomOrder) {
-                // Zamíchání kartiček
-                currentCards = shuffleArray(currentCards);
-                console.log('Kartičky zamíchány do náhodného pořadí');
-            } else {
-                console.log('Kartičky v původním pořadí');
+        }, 'flashcardKeydown');
+        
+        // Nouzový event listener pro celou stránku (při zaseknutí)
+        addEventListenerWithTracking(document, 'keydown', (e) => {
+            if (e.key === ' ' || e.key === 'f') { // Mezerník nebo klávesa 'f'
+                console.log('Nouzové otočení karty klávesou');
+                flipCard();
             }
-            
-            let currentIndex = 0;
-            const totalCards = currentCards.length;
-            
-            // Reference na prvky
-            const cardFront = document.getElementById('card-front');
-            const cardBack = document.getElementById('card-back');
-            const flashcard = document.getElementById('flashcard');
-            const flipBtn = document.getElementById('flipBtn');
-            const progressBar = document.getElementById('progress-bar');
-            const progressText = document.getElementById('progress-text');
-            const ratingBtns = document.getElementById('rating-btns');
-            
-            // Kontrola, zda byly všechny potřebné elementy nalezeny
-            if (!cardFront || !cardBack || !flashcard || !flipBtn || !progressBar || 
-                !progressText || !ratingBtns) {
-                console.error('Chybí některé potřebné elementy pro studium');
-                alert('Chyba: Nepodařilo se inicializovat rozhraní pro studium.');
-                return;
-            }
-            
-            // Nastavení počátečního stavu
-            updateProgress(0, totalCards);
-            showCard(currentCards[0]);
-            
-            // Resetovat tlačítka hodnocení
-            ratingBtns.classList.add('hidden');
-            
-            // Event listener pro přepínač náhodného pořadí
-            if (randomOrderToggle) {
-                // Odstranit existující event listenery pro předcházení duplicit
-                const newToggle = randomOrderToggle.cloneNode(true);
-                randomOrderToggle.parentNode.replaceChild(newToggle, randomOrderToggle);
-                
-                // Přidat nový event listener
-                newToggle.addEventListener('change', () => {
-                    // Uložit novou preferenci
-                    localStorage.setItem('randomOrderPreference', newToggle.checked);
-                    // Restartovat studium s novým nastavením
-                    setupStudySession(cards, newToggle.checked);
-                });
-            }
-            
-            // Event listener pro otočení karty
-            flashcard.addEventListener('click', flipCard);
-            flipBtn.addEventListener('click', flipCard);
-            
-            // Event listener pro klávesnici (Enter pro otočení karty)
-            flashcard.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    flipCard();
-                }
-            });
-            
-            // Funkce pro otočení karty
-            function flipCard() {
-                if (cardFront.classList.contains('hidden')) {
-                    // Otočit zpět na přední stranu
-                    cardFront.classList.remove('hidden');
-                    cardBack.classList.add('hidden');
-                    ratingBtns.classList.add('hidden');
-                    flipBtn.textContent = 'Otočit';
-                } else {
-                    // Otočit na zadní stranu
-                    cardFront.classList.add('hidden');
-                    cardBack.classList.remove('hidden');
-                    ratingBtns.classList.remove('hidden');
-                    flipBtn.textContent = 'Zpět';
-                }
-            }
-            
-            // Event listenery pro tlačítka hodnocení
-            const ratingButtons = document.querySelectorAll('.rating-btn');
-            ratingButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const rating = parseInt(button.getAttribute('data-rating'));
-                    
-                    // Přejít na další kartu
-                    currentIndex++;
-                    if (currentIndex >= totalCards) {
-                        // Konec studia
-                        alert('Gratuluji! Dokončili jste studium tohoto balíčku.');
-                        showSection(homeSection);
-                        homeBtn.classList.add('active');
-                        return;
-                    }
-                    
-                    // Aktualizovat progress
-                    updateProgress(currentIndex, totalCards);
-                    
-                    // Zobrazit další kartu
-                    showCard(currentCards[currentIndex]);
-                    
-                    // Resetovat na přední stranu
-                    cardFront.classList.remove('hidden');
-                    cardBack.classList.add('hidden');
-                    ratingBtns.classList.add('hidden');
-                    flipBtn.textContent = 'Otočit';
-                });
-            });
-            
-            // Tlačítka pro ukončení a restart studia
-            document.getElementById('endSessionBtn').addEventListener('click', () => {
-                showSection(homeSection);
-                homeBtn.classList.add('active');
-            });
-            
-            document.getElementById('restartSessionBtn').addEventListener('click', () => {
-                setupStudySession(cards, randomOrderToggle.checked);
-            });
-        } catch (error) {
-            console.error('Chyba při nastavování studia:', error);
-            alert('Nastala chyba při přípravě studia: ' + error.message);
+        }, 'documentKeydown');
+        
+        // Event listener pro ukončení studia
+        addEventListenerWithTracking(elements.endSessionBtn, 'click', () => {
+            showSection(homeSection);
+            homeBtn.classList.add('active');
+            cleanupActiveSession();
+        }, 'endSession');
+        
+        // Event listener pro restart studia
+        addEventListenerWithTracking(elements.restartSessionBtn, 'click', () => {
+            setupStudySession(activeStudySession.originalCards, elements.randomOrderToggle.checked);
+        }, 'restartSession');
+        
+        // Přidání event listenerů pro tlačítka hodnocení
+        const ratingButtons = document.querySelectorAll('.rating-btn');
+        ratingButtons.forEach((button, index) => {
+            addEventListenerWithTracking(button, 'click', () => {
+                const rating = parseInt(button.getAttribute('data-rating'));
+                moveToNextCard(rating);
+            }, `ratingButton${index}`);
+        });
+        
+        console.log('Studijní relace byla úspěšně inicializována');
+        
+    } catch (error) {
+        console.error('Chyba při nastavování studia:', error);
+        alert('Nastala chyba při přípravě studia: ' + error.message);
+        cleanupActiveSession();
+    }
+}
+
+// Pomocná funkce pro přidání a sledování event listeneru
+function addEventListenerWithTracking(element, eventType, handler, handlerName) {
+    if (!element) {
+        console.warn(`Nelze přidat listener ${handlerName} - element neexistuje`);
+        return;
+    }
+    
+    const key = `${element.id || 'anonymous'}-${eventType}-${handlerName}`;
+    
+    // Odstranit existující event listener, pokud již existuje
+    if (cardEventListeners[key]) {
+        element.removeEventListener(eventType, cardEventListeners[key]);
+        console.log(`Odstraněn existující event listener: ${key}`);
+    }
+    
+    // Obalení handleru pro lepší diagnostiku
+    const trackedHandler = (e) => {
+        console.log(`Event listener volán: ${key}`);
+        handler(e);
+    };
+    
+    // Přidání nového event listeneru
+    element.addEventListener(eventType, trackedHandler);
+    cardEventListeners[key] = trackedHandler;
+    console.log(`Přidán nový event listener: ${key}`);
+}
+
+// Funkce pro vyčištění aktivní relace
+function cleanupActiveSession() {
+    console.log('Čištění aktivní studijní relace');
+    
+    // Odstranit všechny registrované event listenery
+    for (const [key, handler] of Object.entries(cardEventListeners)) {
+        const [elementId, eventType] = key.split('-');
+        const element = elementId === 'document' ? document : document.getElementById(elementId);
+        
+        if (element && handler) {
+            element.removeEventListener(eventType, handler);
+            console.log(`Odstraněn event listener: ${key}`);
         }
     }
+    
+    // Vyčistit objekt s listenery
+    cardEventListeners = {};
+    activeStudySession = null;
+}
+
+// Funkce pro otočení karty
+function flipCard() {
+    if (!activeStudySession) return;
+    
+    const { elements } = activeStudySession;
+    
+    if (elements.cardFront.classList.contains('hidden')) {
+        // Otočit zpět na přední stranu
+        elements.cardFront.classList.remove('hidden');
+        elements.cardBack.classList.add('hidden');
+        elements.ratingBtns.classList.add('hidden');
+        elements.flipBtn.textContent = 'Otočit';
+    } else {
+        // Otočit na zadní stranu
+        elements.cardFront.classList.add('hidden');
+        elements.cardBack.classList.remove('hidden');
+        elements.ratingBtns.classList.remove('hidden');
+        elements.flipBtn.textContent = 'Zpět';
+    }
+}
+
+// Funkce pro přechod na další kartu
+function moveToNextCard(rating) {
+    if (!activeStudySession) return;
+    
+    const { elements, currentCards } = activeStudySession;
+    
+    // Přejít na další kartu
+    activeStudySession.currentIndex++;
+    
+    // Kontrola, zda jsme na konci balíčku
+    if (activeStudySession.currentIndex >= currentCards.length) {
+        // Konec studia
+        alert('Gratuluji! Dokončili jste studium tohoto balíčku.');
+        showSection(homeSection);
+        homeBtn.classList.add('active');
+        cleanupActiveSession();
+        return;
+    }
+    
+    // Aktualizovat progress
+    updateProgress(activeStudySession.currentIndex, currentCards.length);
+    
+    // Zobrazit další kartu
+    showCard(currentCards[activeStudySession.currentIndex]);
+    
+    // Resetovat na přední stranu
+    elements.cardFront.classList.remove('hidden');
+    elements.cardBack.classList.add('hidden');
+    elements.ratingBtns.classList.add('hidden');
+    elements.flipBtn.textContent = 'Otočit';
+}
 
     // Zobrazení karty
     function showCard(card) {
