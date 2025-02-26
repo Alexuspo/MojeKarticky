@@ -1,5 +1,4 @@
 const express = require('express');
-const multer = require('multer');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
@@ -8,7 +7,6 @@ const ankiParser = require('./anki-parser');
 // Konfigurace serveru
 const app = express();
 const PORT = process.env.PORT || 3000;
-const upload = multer({ dest: 'uploads/' });
 
 // Middleware
 app.use(cors());
@@ -18,10 +16,16 @@ app.use(express.static('public'));
 // Databáze kartiček (prozatím jednoduchý JSON soubor)
 let decks = [];
 const DECKS_FILE = path.join(__dirname, 'data', 'decks.json');
+const DEFAULT_ANKI_FILE = path.join(__dirname, 'public', 'anki', 'default-deck.apkg');
 
 // Ujistit se, že složka data existuje
 if (!fs.existsSync(path.join(__dirname, 'data'))) {
     fs.mkdirSync(path.join(__dirname, 'data'));
+}
+
+// Ujistit se, že složka pro Anki soubory existuje
+if (!fs.existsSync(path.join(__dirname, 'public', 'anki'))) {
+    fs.mkdirSync(path.join(__dirname, 'public', 'anki'), { recursive: true });
 }
 
 // Načíst uložená balíčky, pokud existují
@@ -37,26 +41,37 @@ try {
     console.error('Chyba při načítání balíčků:', error);
 }
 
-// API Endpoint pro nahrání Anki souboru
-app.post('/api/upload', upload.single('ankiFile'), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: 'Žádný soubor nebyl nahrán' });
-    }
-
+// API Endpoint pro načtení Anki souboru z public/anki adresáře
+app.get('/api/load-default-deck', async (req, res) => {
     try {
+        if (!fs.existsSync(DEFAULT_ANKI_FILE)) {
+            return res.status(404).json({ error: 'Výchozí Anki soubor nebyl nalezen' });
+        }
+
         // Zpracování Anki souboru
-        const deck = await ankiParser.parseAnkiFile(req.file.path);
+        const deck = await ankiParser.parseAnkiFile(DEFAULT_ANKI_FILE);
         
-        // Přidat do seznamu balíčků
-        decks.push(deck);
+        // Kontrola, zda balíček s tímto ID už neexistuje
+        const existingDeckIndex = decks.findIndex(d => d.id === deck.id);
+        
+        if (existingDeckIndex !== -1) {
+            // Aktualizovat existující balíček
+            decks[existingDeckIndex] = {
+                ...deck,
+                lastModified: new Date().toISOString()
+            };
+        } else {
+            // Přidat nový balíček do seznamu
+            decks.push(deck);
+        }
         
         // Uložit do souboru
         fs.writeFileSync(DECKS_FILE, JSON.stringify(decks));
         
-        // Smazat dočasný soubor
-        fs.unlinkSync(req.file.path);
-        
-        res.status(200).json({ message: 'Soubor byl úspěšně zpracován', deckId: deck.id });
+        res.status(200).json({ 
+            message: 'Výchozí balíček byl úspěšně načten', 
+            deckId: deck.id 
+        });
     } catch (error) {
         console.error('Chyba při zpracování souboru:', error);
         res.status(500).json({ error: 'Nastala chyba při zpracování souboru' });

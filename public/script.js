@@ -2,20 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Elementy UI
     const homeBtn = document.getElementById('homeBtn');
     const studyBtn = document.getElementById('studyBtn');
-    const uploadBtn = document.getElementById('uploadBtn');
+    const loadDeckBtn = document.getElementById('loadDeckBtn');
     
     const homeSection = document.getElementById('home-section');
     const studySection = document.getElementById('study-section');
-    const uploadSection = document.getElementById('upload-section');
     
     const decksContainer = document.getElementById('decks-container');
     const noDecksMessage = document.getElementById('no-decks');
-    
-    const uploadForm = document.getElementById('upload-form');
-    const ankiFileInput = document.getElementById('anki-file');
-    const selectedFileText = document.getElementById('selected-file');
-    const uploadProgress = document.getElementById('upload-progress');
-    const uploadResult = document.getElementById('upload-result');
     
     const flashcard = document.getElementById('flashcard');
     const cardFront = document.getElementById('card-front');
@@ -41,100 +34,54 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Nejprve vyberte balíček kartiček k procvičování.');
         }
     });
-    uploadBtn.addEventListener('click', () => showSection(uploadSection));
+    
+    loadDeckBtn.addEventListener('click', async () => {
+        try {
+            // Zobrazit načítání
+            noDecksMessage.textContent = 'Načítání výchozího balíčku...';
+            noDecksMessage.classList.remove('hidden');
+            decksContainer.innerHTML = '';
+            
+            // Zavolat API pro načtení výchozího balíčku
+            const response = await fetch('/api/load-default-deck');
+            const result = await response.json();
+            
+            if (response.ok) {
+                alert('Balíček byl úspěšně načten!');
+                // Po úspěšném načtení aktualizovat seznam balíčků
+                loadDecks();
+            } else {
+                alert(`Chyba: ${result.error}`);
+                noDecksMessage.textContent = `Chyba při načítání balíčku: ${result.error}`;
+            }
+        } catch (error) {
+            console.error('Chyba při načítání balíčku:', error);
+            noDecksMessage.textContent = 'Došlo k chybě při komunikaci se serverem.';
+            alert('Nepodařilo se načíst balíček.');
+        }
+    });
 
     // Funkce pro zobrazení sekce
     function showSection(section) {
         homeSection.classList.remove('active-section');
         studySection.classList.remove('active-section');
-        uploadSection.classList.remove('active-section');
         
         homeSection.classList.add('hidden-section');
         studySection.classList.add('hidden-section');
-        uploadSection.classList.add('hidden-section');
         
         section.classList.remove('hidden-section');
         section.classList.add('active-section');
         
         homeBtn.classList.remove('active');
         studyBtn.classList.remove('active');
-        uploadBtn.classList.remove('active');
+        loadDeckBtn.classList.remove('active');
         
-        if (section === homeSection) homeBtn.classList.add('active');
-        if (section === studySection) studyBtn.classList.add('active');
-        if (section === uploadSection) uploadBtn.classList.add('active');
-        
-        // Pokud je zobrazen domovský panel, načíst balíčky
         if (section === homeSection) {
+            homeBtn.classList.add('active');
             loadDecks();
         }
+        if (section === studySection) studyBtn.classList.add('active');
     }
-
-    // Zpracování nahrávání souborů
-    ankiFileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            selectedFileText.textContent = e.target.files[0].name;
-        } else {
-            selectedFileText.textContent = 'Žádný soubor nebyl vybrán';
-        }
-    });
-
-    uploadForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const file = ankiFileInput.files[0];
-        if (!file) {
-            alert('Vyberte soubor k nahrání');
-            return;
-        }
-        
-        // Zobrazit loading stav
-        uploadForm.classList.add('hidden');
-        uploadProgress.classList.remove('hidden');
-        uploadResult.classList.add('hidden');
-        
-        // Vytvořit FormData objekt
-        const formData = new FormData();
-        formData.append('ankiFile', file);
-        
-        try {
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData
-            });
-            
-            const result = await response.json();
-            
-            uploadForm.classList.remove('hidden');
-            uploadProgress.classList.add('hidden');
-            uploadResult.classList.remove('hidden');
-            
-            if (response.ok) {
-                uploadResult.textContent = 'Soubor byl úspěšně nahrán a zpracován!';
-                uploadResult.classList.add('success-message');
-                uploadResult.classList.remove('error-message');
-                ankiFileInput.value = '';
-                selectedFileText.textContent = 'Žádný soubor nebyl vybrán';
-                
-                // Po 2 sekundách přejít na domovskou stránku
-                setTimeout(() => {
-                    showSection(homeSection);
-                }, 2000);
-            } else {
-                uploadResult.textContent = `Chyba: ${result.error}`;
-                uploadResult.classList.add('error-message');
-                uploadResult.classList.remove('success-message');
-            }
-        } catch (error) {
-            uploadForm.classList.remove('hidden');
-            uploadProgress.classList.add('hidden');
-            uploadResult.classList.remove('hidden');
-            uploadResult.textContent = 'Došlo k chybě při nahrávání souboru';
-            uploadResult.classList.add('error-message');
-            uploadResult.classList.remove('success-message');
-            console.error('Error:', error);
-        }
-    });
 
     // Načtení balíčků
     async function loadDecks() {

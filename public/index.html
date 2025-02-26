@@ -12,7 +12,7 @@
         <nav>
             <button id="homeBtn" class="nav-btn active">Domů</button>
             <button id="studyBtn" class="nav-btn">Studovat</button>
-            <button id="uploadBtn" class="nav-btn">Nahrát Anki</button>
+            <button id="loadDeckBtn" class="nav-btn">Načíst kartičky</button>
         </nav>
     </header>
 
@@ -22,7 +22,7 @@
             <h2>Vaše balíčky kartiček</h2>
             <div id="decks-container" class="decks-grid"></div>
             <div id="no-decks" class="message">
-                <p>Zatím nemáte žádné balíčky. Nahrajte svůj první Anki soubor kliknutím na tlačítko "Nahrát Anki".</p>
+                <p>Zatím nemáte žádné balíčky. Klikněte na tlačítko "Načíst kartičky" pro načtení balíčku.</p>
             </div>
         </section>
 
@@ -52,24 +52,6 @@
                     <button data-rating="5" class="rating-btn">Snadné</button>
                 </div>
             </div>
-        </section>
-
-        <!-- Sekce pro nahrání Anki souboru -->
-        <section id="upload-section" class="hidden-section">
-            <h2>Nahrát Anki balíček</h2>
-            <form id="upload-form" class="upload-form">
-                <div class="file-upload">
-                    <label for="anki-file">Vyberte Anki soubor (.apkg)</label>
-                    <input type="file" id="anki-file" accept=".apkg" required>
-                    <p id="selected-file">Žádný soubor nebyl vybrán</p>
-                </div>
-                <button type="submit" id="submitUploadBtn" class="primary-btn">Nahrát</button>
-            </form>
-            <div id="upload-progress" class="hidden">
-                <p>Nahrávání a zpracování souboru...</p>
-                <div class="spinner"></div>
-            </div>
-            <div id="upload-result" class="message hidden"></div>
         </section>
     </main>
 
