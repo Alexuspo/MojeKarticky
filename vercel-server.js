@@ -150,7 +150,17 @@ function createLiteraturaDeck() {
         { front: "Neruda byl redaktorem", back: "Národních listů" },
         { front: "Jmenujte jednu Nerudovu básnickou sbírku", back: "Písně kosmické" },
         { front: "Autorem poezie večerní písně a Pohádky z naší vesnice je", back: "Vítězslav Hálek" },
-        { front: "Autorem romaneta v české literatuře je", back: "Jakub Arbes" }
+        { front: "Autorem romaneta v české literatuře je", back: "Jakub Arbes" },
+        { front: "Romaneto je", back: "Krátká mystická novela která se musí odehrává v Praze" },
+        { front: "Jmenujte jedno Arbesovo romaneto", back: "Newtonův mozek" },
+        { front: "Karolina světlá ve své tvorbě zobrazovala", back: "Postavy těžce zkoušených žen" },
+        { front: "Jmenujte jedno dílo K. světlé", back: "Vesnický román" },
+        { front: "Libreto je", back: "předloha k opeře" },
+        { front: "Libreta psala", back: "Eliška Krásnohorská" },
+        { front: "Libreta vytvořila k opeře", back: "Eliška Krásnohorská" },
+        { front: "Povídku muzikanstká Libuška napsala", back: "Vítězslav Hálek" },
+        { front: "Karolina světlá se jmenovala vlastním jménem", back: "Johana Mužáková" },
+        { front: "Jan Neruda podepisoval své fejetony", back: "△" }
     ];
     
     // Přidat ID ke každé kartě
