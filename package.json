@@ -12,7 +12,9 @@
     "restart": "npm run setup && npm start",
     "clean": "rimraf node_modules package-lock.json && npm install",
     "vercel-build": "echo 'Build proběhl úspěšně'",
-    "download-images": "node image-downloader.js"
+    "download-images": "node image-downloader.js",
+    "load-decks": "node load-all-decks.js",
+    "load-abstraktni": "node load-specific-deck.js"
   },
   "engines": {
     "node": ">=14.0.0"

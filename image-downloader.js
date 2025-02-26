@@ -69,30 +69,53 @@ async function extractImagesFromFile(filePath) {
         // Dočasné parsování pomocí cheerio pro extrakci obrázků
         const lines = content.split('\n');
         
-        for (const line of lines) {
-            if (!line.includes('<img')) continue;
+        // Dump obsah souboru pro debugging
+        console.log('Prvních 5 řádků souboru:');
+        for (let i = 0; i < Math.min(5, lines.length); i++) {
+            console.log(`${i+1}: ${lines[i].substring(0, 100)}${lines[i].length > 100 ? '...' : ''}`);
+        }
+        
+        console.log(`Celkem řádků: ${lines.length}`);
+        
+        // Projít všechny řádky a hledat obrázky
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
             
-            // Použít cheerio pro parsování HTML obsahu
-            const $ = cheerio.load(line);
+            if (!line.includes('<img')) {
+                continue;
+            }
             
-            $('img').each((i, img) => {
-                // Získat URL obrázku z atributu src
-                const src = $(img).attr('src');
-                if (src) {
-                    // Extrahovat název souboru z URL
-                    let fileName = path.basename(src).split('!')[0]; // Odstranit případné parametry za !
-                    
-                    // Případně odstranit query parametry
-                    fileName = fileName.split('?')[0];
-                    
-                    // Přidat informace o obrázku
-                    images.push({
-                        original: src,
-                        fileName: fileName,
-                        alt: $(img).attr('alt') || 'Umělecké dílo'
-                    });
-                }
-            });
+            console.log(`Řádek ${i+1} obsahuje značku <img>`);
+            
+            try {
+                // Použít cheerio pro parsování HTML obsahu
+                const $ = cheerio.load(line);
+                
+                $('img').each((i, img) => {
+                    // Získat URL obrázku z atributu src
+                    const src = $(img).attr('src');
+                    if (src) {
+                        console.log(`  Nalezen obrázek: ${src}`);
+                        
+                        // Extrahovat název souboru z URL
+                        let fileName = path.basename(src).split('!')[0]; // Odstranit případné parametry za !
+                        
+                        // Případně odstranit query parametry
+                        fileName = fileName.split('?')[0];
+                        
+                        // Přidat informace o obrázku
+                        images.push({
+                            original: src,
+                            fileName: fileName,
+                            alt: $(img).attr('alt') || 'Umělecké dílo'
+                        });
+                        
+                        console.log(`  Přidán obrázek: ${fileName}`);
+                    }
+                });
+            } catch (cheerioError) {
+                console.error(`  Chyba při parsování řádku ${i+1}:`, cheerioError.message);
+            }
         }
         
         console.log(`Nalezeno ${images.length} odkazů na obrázky`);
@@ -115,10 +138,19 @@ async function updateImageLinks(filePath, images) {
         console.log('Aktualizuji odkazy v souboru...');
         let content = fs.readFileSync(filePath, 'utf8');
         
+        // Pro balíček Abstraktní umění potřebujeme správně zformátovat cesty k obrázkům
+        let isAbstractArt = filePath.includes('Abstraktní') || filePath.includes('abstraktni');
+        
         for (const img of images) {
             // Pokud byl obrázek úspěšně stažen, aktualizovat odkaz
             if (img.localPath) {
                 const localFileName = path.basename(img.localPath);
+                
+                // Speciální logika pro Abstraktní umění
+                if (isAbstractArt) {
+                    console.log(`Aktualizuji odkaz pro Abstraktní umění: ${img.original} -> images/${localFileName}`);
+                }
+                
                 // Nahradit původní URL lokálním souborem
                 const regex = new RegExp(`src=["']${img.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`, 'g');
                 content = content.replace(regex, `src="images/${localFileName}"`);

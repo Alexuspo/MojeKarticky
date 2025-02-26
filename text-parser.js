@@ -1,6 +1,62 @@
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+// ...existing code...
+
+/**
+ * Najde a načte všechny textové soubory s kartičkami ve složce
+ * @param {string} folderPath - Cesta ke složce s textovými soubory
+ * @returns {Array} - Pole balíčků kartiček
+ */
+function loadAllTextDecks(folderPath) {
+    try {
+        console.log(`Hledám textové soubory ve složce: ${folderPath}`);
+        
+        if (!fs.existsSync(folderPath)) {
+            console.warn(`Složka ${folderPath} neexistuje`);
+            return [];
+        }
+        
+        // Získání seznamu souborů
+        const files = fs.readdirSync(folderPath);
+        console.log(`Nalezeno ${files.length} souborů ve složce:`);
+        files.forEach(file => console.log(` - ${file}`));
+        
+        const textFiles = files.filter(file => file.endsWith('.txt'));
+        console.log(`Z toho ${textFiles.length} textových souborů`);
+        
+        if (textFiles.length === 0) {
+            console.warn('Nebyly nalezeny žádné textové soubory s kartičkami');
+            return [];
+        }
+        
+        // Parsování každého textového souboru
+        const decks = [];
+        
+        for (const textFile of textFiles) {
+            const filePath = path.join(folderPath, textFile);
+            console.log(`Zpracovávám soubor: ${filePath}`);
+            
+            // Vytvořit jméno balíčku z názvu souboru (bez přípony)
+            const deckName = path.basename(textFile, '.txt');
+            console.log(`Vytvářím balíček s názvem: ${deckName}`);
+            
+            const deck = parseTextFile(filePath);
+            
+            if (deck) {
+                // Nastavit název balíčku podle souboru
+                deck.name = deckName;
+                decks.push(deck);
+                console.log(`Úspěšně přidán balíček: ${deck.name} s ${deck.cards.length} kartami`);
+            } else {
+                console.log(`Nepodařilo se zpracovat soubor: ${textFile}`);
+            }
+        }
+        
+        console.log(`Celkem zpracováno ${decks.length} balíčků z textových souborů`);
+        return decks;
+    } catch (error) {
+        console.error('Chyba při načítání textových balíčků:', error);
+        return [];
+    }
+}
 
 /**
  * Parsuje textový soubor s exportovanými kartičkami
@@ -25,9 +81,12 @@ function parseTextFile(filePath) {
         console.log(`Počet řádků v souboru: ${lines.length}`);
         
         // Základní informace o balíčku
-        let deckName = 'Literatura-Test-karticky';
+        const fileName = path.basename(filePath, '.txt');
+        let deckName = fileName; // Použít název souboru jako název balíčku
         let separator = '\t'; // Výchozí oddělovač je tabulátor
         let isHtml = false; // Výchozí hodnota pro HTML podporu
+        
+        console.log(`Název balíčku odvozen ze souboru: ${deckName}`);
         
         // Pole pro kartičky
         const cards = [];
@@ -49,18 +108,29 @@ function parseTextFile(filePath) {
                     const key = headerParts[0].trim().toLowerCase();
                     const value = headerParts.slice(1).join(':').trim();
                     
+                    console.log(`Detekována hlavička: ${key}=${value}`);
+                    
                     // Typ oddělovače
                     if (key === 'separator') {
                         if (value === 'tab') {
                             separator = '\t';
+                            console.log('Nastavení oddělovače: tabulátor');
                         } else {
                             separator = value;
+                            console.log(`Nastavení oddělovače: ${value}`);
                         }
                     }
                     
                     // Povolení HTML obsahu
                     if (key === 'html') {
                         isHtml = value.toLowerCase() === 'true';
+                        console.log(`HTML formátování: ${isHtml ? 'povoleno' : 'zakázáno'}`);
+                    }
+                    
+                    // Název balíčku (pokud je specifikován)
+                    if (key === 'deck') {
+                        // deckName zachováme z názvu souboru
+                        console.log('Detekován název balíčku, ale zachováváme název ze souboru');
                     }
                 }
                 
@@ -68,46 +138,69 @@ function parseTextFile(filePath) {
             }
             
             // Zpracování řádků s kartičkami
-            const parts = line.split(separator);
-            
-            // Kontrola, zda má řádek dostatek částí
-            if (parts.length < 4) {
-                continue;
-            }
-            
-            // Vytvoření karty
-            // Index 2 je přední strana, index 3 je zadní strana
-            let front = parts[2] ? parts[2].trim() : '';
-            let back = parts[3] ? parts[3].trim() : '';
-            
-            // Zpracování HTML obsahu
-            if (isHtml) {
-                // Zpracovat odkazy na obrázky a nahradit je HTML značkami img
-                const mediaPattern = /<img[^>]*src=["']([^"']+)["'][^>]*>/g;
+            try {
+                // Zřetelnější logování pro ladění
+                console.log(`Řádek ${i+1}: ${line.substring(0, 50)}${line.length > 50 ? '...' : ''}`);
                 
-                // Zpracování předních a zadních stran
-                front = processCardContentWithMedia(front, mediaPattern);
-                back = processCardContentWithMedia(back, mediaPattern);
-            }
-            
-            // Přeskočit neplatné karty
-            if (!front || !back) {
+                const parts = line.split(separator);
+                console.log(`  Rozděleno na ${parts.length} částí`);
+                
+                if (parts.length < 3) {
+                    console.log(`  Přeskakuji řádek s nedostatkem částí (${parts.length})`);
+                    continue;
+                }
+                
+                // Získat indexy pro přední a zadní stranu - podpora různých formátů exportů
+                // Pro "Abstraktní umění.txt" jsou to indexy 1 a 2
+                let frontIndex = 2; // Výchozí index pro přední stranu
+                let backIndex = 3;  // Výchozí index pro zadní stranu
+                
+                // Pro soubor "Abstraktní umění.txt" je speciální uspořádání
+                if (fileName.includes("Abstraktní")) {
+                    frontIndex = 1;
+                    backIndex = 2;
+                    console.log(`  Detekován soubor Abstraktní umění, použity indexy: front=${frontIndex}, back=${backIndex}`);
+                }
+                
+                // Vytvoření karty
+                let front = parts[frontIndex] ? parts[frontIndex].trim() : '';
+                let back = parts[backIndex] ? parts[backIndex].trim() : '';
+                
+                // Kontrola obsahu
+                console.log(`  Front: ${front.substring(0, 30)}${front.length > 30 ? '...' : ''}`);
+                console.log(`  Back: ${back.substring(0, 30)}${back.length > 30 ? '...' : ''}`);
+                
+                // Zpracování HTML obsahu
+                if (isHtml) {
+                    front = processCardContentWithMedia(front);
+                    back = processCardContentWithMedia(back);
+                }
+                
+                // Přeskočit neplatné karty
+                if (!front || !back) {
+                    console.log('  Přeskakuji řádek s prázdným obsahem');
+                    continue;
+                }
+                
+                // Generování ID karty
+                const cardId = crypto.createHash('md5')
+                    .update(`${front}${back}${i}`)
+                    .digest('hex')
+                    .substring(0, 8);
+                
+                // Přidat kartu do seznamu
+                cards.push({
+                    id: cardId,
+                    front: front,
+                    back: back,
+                    tags: ['abstraktní_umění']
+                });
+                
+                console.log(`  Vytvořena karta s ID: ${cardId}`);
+            } catch (lineError) {
+                console.error(`Chyba při zpracování řádku ${i+1}:`, lineError);
                 continue;
             }
-            
-            // Generování ID karty
-            const cardId = crypto.createHash('md5')
-                .update(`${front}${back}${i}`)
-                .digest('hex')
-                .substring(0, 8);
-            
-            // Přidat kartu do seznamu
-            cards.push({
-                id: cardId,
-                front: front,
-                back: back,
-                tags: ['literatura']
-            });
         }
         
         // Pokud nebyly nalezeny žádné karty, vrátit null
@@ -139,172 +232,4 @@ function parseTextFile(filePath) {
     }
 }
 
-/**
- * Zpracování obsahu kartiček obsahujících média
- * @param {string} content - Obsah kartičky
- * @param {RegExp} mediaPattern - Regulární výraz pro detekci médií
- * @returns {string} - Zpracovaný obsah
- */
-function processCardContentWithMedia(content, mediaPattern) {
-    if (!content) return '';
-    
-    // Nahradit odkazy na lokální obrázky (pokud existují)
-    content = content.replace(mediaPattern, (match, src) => {
-        // Pokud je odkaz relativní, upravit cestu
-        if (!src.startsWith('http') && !src.startsWith('data:')) {
-            // Pokud je cesta k obrázku relativní, přidáme cestu k veřejným obrázkům
-            const imageSrc = `/images/${path.basename(src)}`;
-            return `<img src="${imageSrc}" alt="Obrázek na kartičce">`;
-        }
-        return match;
-    });
-    
-    return content;
-}
-
-/**
- * Najde a načte všechny textové soubory s kartičkami ve složce
- * @param {string} folderPath - Cesta ke složce s textovými soubory
- * @returns {Array} - Pole balíčků kartiček
- */
-function loadAllTextDecks(folderPath) {
-    try {
-        console.log(`Hledám textové soubory ve složce: ${folderPath}`);
-        
-        if (!fs.existsSync(folderPath)) {
-            console.warn(`Složka ${folderPath} neexistuje`);
-            return [];
-        }
-        
-        // Získání seznamu souborů
-        const files = fs.readdirSync(folderPath);
-        console.log(`Nalezeno ${files.length} souborů ve složce`);
-        
-        const textFiles = files.filter(file => file.endsWith('.txt'));
-        console.log(`Z toho ${textFiles.length} textových souborů`);
-        
-        if (textFiles.length === 0) {
-            console.warn('Nebyly nalezeny žádné textové soubory s kartičkami');
-            return [];
-        }
-        
-        // Parsování každého textového souboru
-        const decks = [];
-        
-        for (const textFile of textFiles) {
-            const filePath = path.join(folderPath, textFile);
-            console.log(`Zpracovávám soubor: ${filePath}`);
-            
-            const deck = parseTextFile(filePath);
-            
-            if (deck) {
-                decks.push(deck);
-                console.log(`Úspěšně přidán balíček: ${deck.name}`);
-            } else {
-                console.log(`Nepodařilo se zpracovat soubor: ${textFile}`);
-            }
-        }
-        
-        console.log(`Celkem zpracováno ${decks.length} balíčků z textových souborů`);
-        return decks;
-    } catch (error) {
-        console.error('Chyba při načítání textových balíčků:', error);
-        return [];
-    }
-}
-
-/**
- * Získá balíček Literatura-Test-karticky z textového souboru
- * @returns {Object} - Balíček Literatura-Test-karticky
- */
-function getLiteraturaFromTextFile() {
-    try {
-        console.log('Načítám Literatura-Test-karticky z textového souboru');
-        
-        // Nejprve zkusit přímou cestu k souboru
-        const textFilePath = path.join(__dirname, 'public', 'Karticky', 'Literatura - Test karticky..txt');
-        
-        if (fs.existsSync(textFilePath)) {
-            console.log(`Nalezen soubor: ${textFilePath}`);
-            const deck = parseTextFile(textFilePath);
-            
-            if (deck) {
-                console.log(`Úspěšně načten balíček s ${deck.cards.length} kartičkami`);
-                return deck;
-            }
-        } else {
-            console.log(`Soubor neexistuje: ${textFilePath}`);
-        }
-        
-        // Zkusit načíst jakýkoliv textový soubor ve složce Karticky
-        const kartickyDir = path.join(__dirname, 'public', 'Karticky');
-        if (fs.existsSync(kartickyDir)) {
-            const files = fs.readdirSync(kartickyDir);
-            for (const file of files) {
-                if (file.endsWith('.txt')) {
-                    const filePath = path.join(kartickyDir, file);
-                    console.log(`Zkouším alternativní soubor: ${filePath}`);
-                    const deck = parseTextFile(filePath);
-                    
-                    if (deck) {
-                        deck.name = "Literatura-Test-karticky";
-                        console.log(`Úspěšně načten alternativní balíček s ${deck.cards.length} kartičkami`);
-                        return deck;
-                    }
-                }
-            }
-        }
-        
-        // Pokud nepomohlo ani jedno, zkusíme vytvořit integrované kartičky
-        console.log('Použití integrovaných kartiček');
-        return createHardcodedDeck();
-        
-    } catch (error) {
-        console.error('Chyba při získávání Literatura-Test-karticky z textového souboru:', error);
-        return createHardcodedDeck();
-    }
-}
-
-/**
- * Vytvoří hardcoded balíček kartiček pro případ, že selže načtení ze souboru
- * @returns {Object} - Hardcoded balíček kartiček
- */
-function createHardcodedDeck() {
-    const cards = [
-        { front: "Májovci tvořili v", back: "v 2 polovině 19.století" },
-        { front: "V jejich čele stál", back: "Jan Neruda" },
-        { front: "Literární skupina se jmenovala podle", back: "Almanachu Máj" },
-        { front: "Májovci se svým dílem hlásili k odkazu", back: "K. H. Máchy" },
-        { front: "Autorem malostranských povídek je", back: "Jan Neruda" },
-        { front: "Fejeton je", back: "Krátký vtipný text a často kritický. (na př v novinách)" },
-        { front: "Neruda byl redaktorem", back: "Národních listů" },
-        { front: "Jmenujte jednu Nerudovu básnickou sbírku", back: "Písně kosmické" },
-        { front: "Autorem poezie večerní písně a Pohádky z naší vesnice je", back: "Vítězslav Hálek" },
-        { front: "Autorem romaneta v české literatuře je", back: "Jakub Arbes" }
-    ];
-    
-    // Přidat ID ke každé kartě
-    const cardsWithId = cards.map((card, index) => ({
-        id: `hardcoded${index}`,
-        front: card.front,
-        back: card.back,
-        tags: ['literatura']
-    }));
-    
-    return {
-        id: "literatura_hardcoded",
-        name: "Literatura-Test-karticky",
-        cards: cardsWithId,
-        created: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
-        source: 'hardcoded',
-        format: 'plain'
-    };
-}
-
-module.exports = {
-    parseTextFile,
-    loadAllTextDecks,
-    getLiteraturaFromTextFile,
-    createHardcodedDeck
-};
+// ...existing code...
