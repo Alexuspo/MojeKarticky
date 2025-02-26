@@ -203,111 +203,69 @@ function getLiteraturaFromTextFile() {
             const files = fs.readdirSync(kartickyDir);
             for (const file of files) {
                 if (file.endsWith('.txt')) {
-            const filePath = path.join(folderPath, textFile);
-            console.log(`Zpracovávám soubor: ${filePath}`);
-            
-            const deck = parseTextFile(filePath);
-            
-            if (deck) {
-                decks.push(deck);
-                console.log(`Úspěšně přidán balíček: ${deck.name}`);
-            } else {
-                console.log(`Nepodařilo se zpracovat soubor: ${textFile}`);
+                    const filePath = path.join(kartickyDir, file);
+                    console.log(`Zkouším alternativní soubor: ${filePath}`);
+                    const deck = parseTextFile(filePath);
+                    
+                    if (deck) {
+                        deck.name = "Literatura-Test-karticky";
+                        console.log(`Úspěšně načten alternativní balíček s ${deck.cards.length} kartičkami`);
+                        return deck;
+                    }
+                }
             }
         }
         
-        console.log(`Celkem zpracováno ${decks.length} balíčků z textových souborů`);
-        return decks;
+        // Pokud nepomohlo ani jedno, zkusíme vytvořit integrované kartičky
+        console.log('Použití integrovaných kartiček');
+        return createHardcodedDeck();
+        
     } catch (error) {
-        console.error('Chyba při načítání textových balíčků:', error);
-        return [];
+        console.error('Chyba při získávání Literatura-Test-karticky z textového souboru:', error);
+        return createHardcodedDeck();
     }
 }
 
 /**
- * Získá balíček Literatura-Test-karticky z textového souboru
- * @returns {Object} - Balíček Literatura-Test-karticky
+ * Vytvoří hardcoded balíček kartiček pro případ, že selže načtení ze souboru
+ * @returns {Object} - Hardcoded balíček kartiček
  */
-function getLiteraturaFromTextFile() {
-    try {
-        console.log('Načítám Literatura-Test-karticky z textového souboru');
-        
-        // Zkusíme najít soubor s různými cestami a názvy
-        const possiblePaths = [
-            path.join(__dirname, 'public', 'Karticky', 'Literatura - Test karticky..txt'),
-            path.join(__dirname, 'public', 'Karticky', 'Literatura - Test karticky.txt'),
-            path.join(__dirname, 'public', 'Karticky', 'Literatura-Test-karticky.txt'),
-            path.join(__dirname, 'public', 'Literatura - Test karticky..txt'),
-            path.join(__dirname, 'public', 'Literatura - Test karticky.txt')
-        ];
-        
-        console.log('Zkouším následující cesty:', possiblePaths);
-        
-        let textFilePath = null;
-        
-        // Zkusit najít existující soubor mezi možnými cestami
-        for (const testPath of possiblePaths) {
-            if (fs.existsSync(testPath)) {
-                textFilePath = testPath;
-                console.log(`Nalezen soubor: ${textFilePath}`);
-                break;
-            } else {
-                console.log(`Soubor neexistuje: ${testPath}`);
-            }
-        }
-        
-        // Pokud nebyl nalezen žádný soubor, zkusíme prohledat složku Karticky
-        if (!textFilePath) {
-            const kartickyDir = path.join(__dirname, 'public', 'Karticky');
-            
-            if (fs.existsSync(kartickyDir)) {
-                const files = fs.readdirSync(kartickyDir);
-                console.log(`Obsah složky ${kartickyDir}:`, files);
-                
-                // Hledat soubor s "literatura" nebo "test" v názvu
-                const literatureFile = files.find(f => 
-                    f.toLowerCase().includes('literatura') || 
-                    f.toLowerCase().includes('test') || 
-                    f.toLowerCase().includes('kartičky') ||
-                    f.toLowerCase().includes('karticky'));
-                
-                if (literatureFile) {
-                    textFilePath = path.join(kartickyDir, literatureFile);
-                    console.log(`Nalezen odpovídající soubor: ${textFilePath}`);
-                }
-            } else {
-                console.log(`Složka ${kartickyDir} neexistuje`);
-            }
-        }
-        
-        // Pokud nebyl nalezen žádný soubor, vrátíme null
-        if (!textFilePath) {
-            console.warn('Nenalezen žádný textový soubor s Literatura-Test-karticky');
-            return null;
-        }
-        
-        // Pokusit se parsovat soubor
-        const deck = parseTextFile(textFilePath);
-        
-        // Pokud byl soubor úspěšně parsován, vrátit balíček
-        if (deck) {
-            // Přejmenovat balíček pro lepší zobrazení
-            deck.name = "Literatura-Test-karticky";
-            console.log(`Úspěšně načten balíček Literatura-Test-karticky s ${deck.cards.length} kartičkami`);
-            return deck;
-        }
-        
-        // Při neúspěchu vrátit null
-        console.warn('Nepodařilo se zpracovat textový soubor s Literatura-Test-karticky');
-        return null;
-    } catch (error) {
-        console.error('Chyba při získávání Literatura-Test-karticky z textového souboru:', error);
-        return null;
-    }
+function createHardcodedDeck() {
+    const cards = [
+        { front: "Májovci tvořili v", back: "v 2 polovině 19.století" },
+        { front: "V jejich čele stál", back: "Jan Neruda" },
+        { front: "Literární skupina se jmenovala podle", back: "Almanachu Máj" },
+        { front: "Májovci se svým dílem hlásili k odkazu", back: "K. H. Máchy" },
+        { front: "Autorem malostranských povídek je", back: "Jan Neruda" },
+        { front: "Fejeton je", back: "Krátký vtipný text a často kritický. (na př v novinách)" },
+        { front: "Neruda byl redaktorem", back: "Národních listů" },
+        { front: "Jmenujte jednu Nerudovu básnickou sbírku", back: "Písně kosmické" },
+        { front: "Autorem poezie večerní písně a Pohádky z naší vesnice je", back: "Vítězslav Hálek" },
+        { front: "Autorem romaneta v české literatuře je", back: "Jakub Arbes" }
+    ];
+    
+    // Přidat ID ke každé kartě
+    const cardsWithId = cards.map((card, index) => ({
+        id: `hardcoded${index}`,
+        front: card.front,
+        back: card.back,
+        tags: ['literatura']
+    }));
+    
+    return {
+        id: "literatura_hardcoded",
+        name: "Literatura-Test-karticky",
+        cards: cardsWithId,
+        created: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+        source: 'hardcoded',
+        format: 'plain'
+    };
 }
 
 module.exports = {
     parseTextFile,
     loadAllTextDecks,
-    getLiteraturaFromTextFile
+    getLiteraturaFromTextFile,
+    createHardcodedDeck
 };
