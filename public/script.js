@@ -227,15 +227,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Vytvořit strukturu pro studium přímo (bez načítání šablony)
                 createStudyInterface(studySection, deck);
                 
+                // Načíst preferenci náhodného pořadí z localStorage
+                const randomPreference = localStorage.getItem('randomOrderPreference') === 'true';
+                
                 // Nastavit název balíčku
                 const deckTitle = document.getElementById('deck-title');
                 if (deckTitle) {
                     deckTitle.textContent = deck.name;
                 }
                 
-                // Příprava kartiček
-                const randomOrderToggle = document.getElementById('randomOrderToggle');
-                setupStudySession(deck.cards, randomOrderToggle ? randomOrderToggle.checked : false);
+                // Příprava kartiček - použít uloženou preferenci
+                setupStudySession(deck.cards, randomPreference);
             })
             .catch(error => {
                 console.error('Chyba při načítání balíčku:', error);
@@ -259,6 +261,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Funkce pro vytvoření rozhraní pro studium
     function createStudyInterface(container, deck) {
+        // Zjistit preferenci náhodného pořadí z localStorage
+        const isRandomOrder = localStorage.getItem('randomOrderPreference') === 'true';
+        
         container.innerHTML = `
             <div class="deck-info">
                 <h2 id="deck-title">${deck.name}</h2>
@@ -268,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span id="progress-text">0/${deck.cards.length}</span>
                 <div class="settings-container">
                     <label class="toggle-switch">
-                        <input type="checkbox" id="randomOrderToggle">
+                        <input type="checkbox" id="randomOrderToggle" ${isRandomOrder ? 'checked' : ''}>
                         <span class="toggle-slider"></span>
                         <span class="toggle-label">Náhodné pořadí</span>
                     </label>
@@ -308,10 +313,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Reference na přepínač náhodného pořadí
+            const randomOrderToggle = document.getElementById('randomOrderToggle');
+            
+            // Pokud je zadán randomOrder parametr, použít ho a synchronizovat s přepínačem
+            if (randomOrderToggle) {
+                // Synchronizovat stav přepínače
+                randomOrderToggle.checked = randomOrder;
+                
+                // Uložit preferenci do localStorage
+                localStorage.setItem('randomOrderPreference', randomOrder);
+            }
+            
             let currentCards = [...cards];
             if (randomOrder) {
                 // Zamíchání kartiček
                 currentCards = shuffleArray(currentCards);
+                console.log('Kartičky zamíchány do náhodného pořadí');
+            } else {
+                console.log('Kartičky v původním pořadí');
             }
             
             let currentIndex = 0;
@@ -325,7 +345,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const progressBar = document.getElementById('progress-bar');
             const progressText = document.getElementById('progress-text');
             const ratingBtns = document.getElementById('rating-btns');
-            const randomOrderToggle = document.getElementById('randomOrderToggle');
             
             // Kontrola, zda byly všechny potřebné elementy nalezeny
             if (!cardFront || !cardBack || !flashcard || !flipBtn || !progressBar || 
@@ -344,9 +363,16 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Event listener pro přepínač náhodného pořadí
             if (randomOrderToggle) {
-                randomOrderToggle.checked = randomOrder;
-                randomOrderToggle.addEventListener('change', () => {
-                    setupStudySession(cards, randomOrderToggle.checked);
+                // Odstranit existující event listenery pro předcházení duplicit
+                const newToggle = randomOrderToggle.cloneNode(true);
+                randomOrderToggle.parentNode.replaceChild(newToggle, randomOrderToggle);
+                
+                // Přidat nový event listener
+                newToggle.addEventListener('change', () => {
+                    // Uložit novou preferenci
+                    localStorage.setItem('randomOrderPreference', newToggle.checked);
+                    // Restartovat studium s novým nastavením
+                    setupStudySession(cards, newToggle.checked);
                 });
             }
             

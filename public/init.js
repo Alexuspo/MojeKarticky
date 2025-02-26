@@ -65,9 +65,19 @@ function cleanupLocalStorage() {
     }
 }
 
+// Inicializace výchozích nastavení, pokud neexistují
+function initDefaultSettings() {
+    // Nastavit výchozí preferenci náhodného pořadí, pokud neexistuje
+    if (localStorage.getItem('randomOrderPreference') === null) {
+        localStorage.setItem('randomOrderPreference', 'false');
+        console.log('Nastavena výchozí preference náhodného pořadí: vypnuto');
+    }
+}
+
 // Spustit inicializační funkce
 document.addEventListener('DOMContentLoaded', function() {
     checkStylesheets();
     cleanupLocalStorage();
+    initDefaultSettings();
     checkServerConnection();
 });
