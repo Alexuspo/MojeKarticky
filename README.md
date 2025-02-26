@@ -7,15 +7,18 @@ Jednoduchá webová aplikace pro studium s Anki kartičkami.
 - Načtení Anki balíčků z předem definovaného umístění
 - Prohlížení kartiček ve formátu otázka-odpověď
 - Hodnocení obtížnosti kartiček
+- Offline režim pro případ výpadku serveru
 
 ## Jak začít
 
-### Prerekvizity
+### Místní vývoj
+
+#### Prerekvizity
 
 - Node.js (verze 12 nebo novější)
 - NPM (obvykle se instaluje společně s Node.js)
 
-### Instalace
+#### Instalace
 
 1. Naklonujte tento repozitář nebo stáhněte zdrojový kód
 2. Otevřete příkazovou řádku v adresáři projektu
@@ -27,13 +30,30 @@ npm install
 
 4. Umístěte váš Anki soubor (.apkg) do složky `public/anki/` a přejmenujte ho na `default-deck.apkg`
 
-### Spuštění aplikace
+#### Spuštění aplikace
 
 ```bash
 npm start
 ```
 
 Aplikace bude dostupná na adrese http://localhost:3000
+
+### Nasazení na Vercel
+
+1. Vytvořte si účet na Vercel a nainstalujte Vercel CLI
+2. Přihlaste se do Vercel pomocí příkazu:
+
+```bash
+vercel login
+```
+
+3. Nasazení aplikace proveďte příkazem:
+
+```bash
+vercel
+```
+
+4. Po nasazení bude aplikace dostupná na adrese vygenerované Vercel.
 
 ## Použití aplikace
 

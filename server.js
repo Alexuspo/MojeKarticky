@@ -8,38 +8,34 @@ const ankiParser = require('./anki-parser');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Na Vercel použijeme In-memory úložiště místo souborového systému
+const isServerless = process.env.VERCEL || process.env.NOW;
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Databáze kartiček (prozatím jednoduchý JSON soubor)
+// Databáze kartiček (v paměti pro serverless, soubor pro lokální vývoj)
 let decks = [];
 const DECKS_FILE = path.join(__dirname, 'data', 'decks.json');
 const DEFAULT_ANKI_FILE = path.join(__dirname, 'public', 'anki', 'default-deck.apkg');
 
-// Ujistit se, že složky existují
-function ensureDirectoriesExist() {
-    const directories = [
-        path.join(__dirname, 'data'),
-        path.join(__dirname, 'public', 'anki')
-    ];
-    
-    directories.forEach(dir => {
-        if (!fs.existsSync(dir)) {
-            try {
-                fs.mkdirSync(dir, { recursive: true });
-                console.log(`Vytvořena složka ${dir}`);
-            } catch (err) {
-                console.error(`Chyba při vytváření složky ${dir}:`, err);
-            }
-        }
-    });
-}
-
-// Uložení balíčků do souboru
+// Funkce pro ukládání a načítání dat
 function saveDecks() {
+    if (isServerless) {
+        // V serverless prostředí pouze logujeme
+        console.log(`Ukládám ${decks.length} balíčků do paměti`);
+        return true;
+    }
+
     try {
+        // Ujistit se, že složka existuje
+        const dataDir = path.join(__dirname, 'data');
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+        
         fs.writeFileSync(DECKS_FILE, JSON.stringify(decks, null, 2));
         console.log(`Uloženo ${decks.length} balíčků do souboru`);
         return true;
@@ -49,8 +45,21 @@ function saveDecks() {
     }
 }
 
-// Načtení balíčků ze souboru
 function loadDecks() {
+    // V serverless prostředí použijeme výchozí ukázkový balíček
+    if (isServerless) {
+        console.log('Serverless prostředí detekováno, používám ukázkový balíček');
+        if (decks.length === 0) {
+            try {
+                decks.push(ankiParser.createDummyDeck());
+                console.log('Vytvořen ukázkový balíček pro serverless prostředí');
+            } catch (err) {
+                console.error('Chyba při vytváření ukázkového balíčku:', err);
+            }
+        }
+        return;
+    }
+
     try {
         if (fs.existsSync(DECKS_FILE)) {
             const data = fs.readFileSync(DECKS_FILE, 'utf8');
@@ -74,22 +83,22 @@ function loadDecks() {
 }
 
 // Inicializace aplikace
-ensureDirectoriesExist();
 loadDecks();
 
-// API Endpoint pro načtení Anki souboru z public/anki adresáře
+// API Endpoint pro načtení výchozího balíčku
 app.get('/api/load-default-deck', async (req, res) => {
     console.log('Požadavek na načtení výchozího balíčku');
     
     try {
-        if (!fs.existsSync(DEFAULT_ANKI_FILE)) {
-            console.warn(`Výchozí Anki soubor neexistuje na cestě: ${DEFAULT_ANKI_FILE}`);
+        // V serverless prostředí nebo pokud soubor neexistuje, použijeme ukázkový balíček
+        if (isServerless || !fs.existsSync(DEFAULT_ANKI_FILE)) {
+            console.log('Používám ukázkový balíček');
             
             // Pokud soubor neexistuje, pokusíme se vytvořit ukázkový balíček
-            const dummyDeck = await ankiParser.parseAnkiFile(null);
+            const dummyDeck = ankiParser.createDummyDeck();
             
             // Přidat ukázkový balíček
-            const existingDummyIndex = decks.findIndex(d => d.id === dummyDeck.id);
+            const existingDummyIndex = decks.findIndex(d => d.name === dummyDeck.name);
             if (existingDummyIndex !== -1) {
                 decks[existingDummyIndex] = dummyDeck;
             } else {
@@ -103,13 +112,13 @@ app.get('/api/load-default-deck', async (req, res) => {
             return res.status(200).json({ 
                 message: 'Ukázkový balíček byl úspěšně vytvořen a načten', 
                 deckId: dummyDeck.id,
-                warning: 'Výchozí Anki soubor nebyl nalezen, byl použit ukázkový balíček'
+                warning: 'Používám ukázkový balíček'
             });
         }
 
+        // Lokální režim - zpracování Anki souboru
         console.log('Začínám zpracovávat Anki soubor');
         
-        // Zpracování Anki souboru
         const deck = await ankiParser.parseAnkiFile(DEFAULT_ANKI_FILE);
         
         // Kontrola, zda balíček s tímto ID už neexistuje
@@ -129,7 +138,6 @@ app.get('/api/load-default-deck', async (req, res) => {
         }
         
         saveDecks();
-        console.log('Balíček byl úspěšně uložen');
         
         res.status(200).json({ 
             message: 'Výchozí balíček byl úspěšně načten', 
@@ -137,10 +145,27 @@ app.get('/api/load-default-deck', async (req, res) => {
         });
     } catch (error) {
         console.error('Chyba při zpracování souboru:', error);
-        res.status(500).json({ 
-            error: 'Nastala chyba při zpracování souboru',
-            details: error.message
-        });
+        
+        // Pokud dojde k chybě, pokusíme se vrátit ukázkový balíček
+        try {
+            const dummyDeck = ankiParser.createDummyDeck();
+            
+            // Přidat ukázkový balíček jako zálohu
+            decks.push(dummyDeck);
+            saveDecks();
+            
+            res.status(200).json({ 
+                message: 'Ukázkový balíček byl načten z důvodu chyby',
+                deckId: dummyDeck.id,
+                warning: 'Došlo k chybě při načítání souboru, používám ukázkový balíček',
+                originalError: error.message
+            });
+        } catch (fallbackError) {
+            res.status(500).json({ 
+                error: 'Nastala kritická chyba při zpracování souboru',
+                details: error.message
+            });
+        }
     }
 });
 
@@ -168,7 +193,7 @@ app.post('/api/create-random-deck', (req, res) => {
 app.get('/api/decks', (req, res) => {
     console.log(`Odesílám ${decks.length} balíčků klientovi`);
     
-    // Pokud nejsou žádné balíčky, pokusíme se vytvořit ukázkový
+    // Pokud nejsou žádné balíčky, vytvoříme ukázkový
     if (decks.length === 0) {
         try {
             const dummyDeck = ankiParser.createDummyDeck();
@@ -262,10 +287,16 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Spustit server
-app.listen(PORT, () => {
-    console.log(`Server běží na http://localhost:${PORT}`);
-});
+// Pro Vercel exportujeme aplikaci
+if (isServerless) {
+    console.log('Exportuji Express aplikaci pro serverless prostředí');
+    module.exports = app;
+} else {
+    // Spustit server
+    app.listen(PORT, () => {
+        console.log(`Server běží na http://localhost:${PORT}`);
+    });
+}
 
 // Přidání metody pro vytváření dummy dat
 if (!ankiParser.createDummyDeck) {
