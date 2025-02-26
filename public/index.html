@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moje Kartičky - Anki Viewer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Moje Kartičky</h1>
+        <nav>
+            <button id="homeBtn" class="nav-btn active">Domů</button>
+            <button id="studyBtn" class="nav-btn">Studovat</button>
+            <button id="uploadBtn" class="nav-btn">Nahrát Anki</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Domovská stránka -->
+        <section id="home-section" class="active-section">
+            <h2>Vaše balíčky kartiček</h2>
+            <div id="decks-container" class="decks-grid"></div>
+            <div id="no-decks" class="message">
+                <p>Zatím nemáte žádné balíčky. Nahrajte svůj první Anki soubor kliknutím na tlačítko "Nahrát Anki".</p>
+            </div>
+        </section>
+
+        <!-- Sekce pro studium kartiček -->
+        <section id="study-section" class="hidden-section">
+            <div class="deck-info">
+                <h2 id="deck-title">Balíček</h2>
+                <div class="progress-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+                <span id="progress-text">0/0</span>
+            </div>
+
+            <div class="flashcard-container">
+                <div id="flashcard" class="flashcard">
+                    <div id="card-front" class="card-side card-front"></div>
+                    <div id="card-back" class="card-side card-back hidden"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="flipBtn" class="control-btn">Otočit</button>
+                <div class="rating-btns hidden" id="rating-btns">
+                    <button data-rating="1" class="rating-btn">Znovu</button>
+                    <button data-rating="3" class="rating-btn">Těžké</button>
+                    <button data-rating="4" class="rating-btn">Dobré</button>
+                    <button data-rating="5" class="rating-btn">Snadné</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sekce pro nahrání Anki souboru -->
+        <section id="upload-section" class="hidden-section">
+            <h2>Nahrát Anki balíček</h2>
+            <form id="upload-form" class="upload-form">
+                <div class="file-upload">
+                    <label for="anki-file">Vyberte Anki soubor (.apkg)</label>
+                    <input type="file" id="anki-file" accept=".apkg" required>
+                    <p id="selected-file">Žádný soubor nebyl vybrán</p>
+                </div>
+                <button type="submit" id="submitUploadBtn" class="primary-btn">Nahrát</button>
+            </form>
+            <div id="upload-progress" class="hidden">
+                <p>Nahrávání a zpracování souboru...</p>
+                <div class="spinner"></div>
+            </div>
+            <div id="upload-result" class="message hidden"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Moje Kartičky &copy; 2023 - Aplikace pro studium s Anki kartičkami</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
