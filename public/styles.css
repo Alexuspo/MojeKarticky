@@ -454,3 +454,25 @@ footer {
     animation: spin 1s linear infinite;
     margin: 10px auto;
 }
+
+/* Styly pro načítání textových kartiček */
+.text-deck-options {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.hint-text {
+    color: #666;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.loading-indicator {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.loading-indicator p {
+    color: #666;
+    margin-top: 10px;
+}

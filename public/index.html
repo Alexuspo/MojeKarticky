@@ -69,6 +69,25 @@
             </div>
         </section>
 
+        <!-- Sekce pro načítání textových kartiček -->
+        <section id="load-text-section" class="hidden-section">
+            <h2>Načíst textové kartičky</h2>
+            <div class="text-deck-options">
+                <button id="autoLoadTextBtn" class="primary-btn">Načíst kartičky ze složky</button>
+                <p class="hint-text">Automaticky načte všechny textové soubory ze složky public/Karticky</p>
+            </div>
+
+            <div class="loading-indicator hidden" id="text-loading">
+                <div class="spinner"></div>
+                <p>Načítám textové kartičky...</p>
+            </div>
+
+            <div id="text-decks-container" class="decks-grid"></div>
+            <div id="no-text-decks" class="message">
+                <p>Zatím nemáte žádné textové balíčky. Klikněte na tlačítko "Načíst kartičky ze složky".</p>
+            </div>
+        </section>
+
         <!-- Sekce O aplikaci -->
         <section id="about-section" class="hidden-section">
             <h2>O aplikaci Moje Kartičky</h2>

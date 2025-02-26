@@ -82,4 +82,88 @@ app.post('/api/load-deck-file', (req, res) => {
     }
 });
 
+// Přidání text-parseru
+const textParser = require('./text-parser');
+
+// API pro získání textových balíčků
+app.get('/api/text-decks', (req, res) => {
+    logInfo('Požadavek na získání textových balíčků');
+    
+    try {
+        // Filtrace balíčků podle zdroje ('textfile')
+        const textDecks = decks.filter(deck => deck.source === 'textfile');
+        
+        logSuccess(`Nalezeno ${textDecks.length} textových balíčků`);
+        res.json(textDecks);
+    } catch (error) {
+        logError('Chyba při získávání textových balíčků:', error);
+        res.status(500).json({ 
+            error: 'Nastala chyba při získávání textových balíčků',
+            details: error.message
+        });
+    }
+});
+
+// API pro načtení textových balíčků ze složky
+app.post('/api/load-text-decks', (req, res) => {
+    logInfo('Požadavek na načtení textových balíčků ze složky');
+    
+    try {
+        // Cesta ke složce s textovými balíčky
+        const folderPath = path.join(__dirname, 'public', 'Karticky');
+        logInfo(`Hledám textové soubory ve složce: ${folderPath}`);
+        
+        // Načtení všech textových balíčků
+        const textDecks = textParser.loadAllTextDecks(folderPath);
+        
+        if (!textDecks || textDecks.length === 0) {
+            logWarning('Nebyly nalezeny žádné textové balíčky');
+            return res.json({ 
+                success: false, 
+                error: 'Nebyly nalezeny žádné textové balíčky' 
+            });
+        }
+        
+        // Přidat nebo aktualizovat balíčky
+        let addedCount = 0;
+        let updatedCount = 0;
+        
+        textDecks.forEach(textDeck => {
+            const existingIndex = decks.findIndex(d => d.name === textDeck.name);
+            
+            if (existingIndex !== -1) {
+                // Aktualizovat existující balíček
+                decks[existingIndex] = textDeck;
+                updatedCount++;
+            } else {
+                // Přidat nový balíček
+                decks.push(textDeck);
+                addedCount++;
+            }
+        });
+        
+        logSuccess(`Načteno ${textDecks.length} textových balíčků (${addedCount} přidáno, ${updatedCount} aktualizováno)`);
+        
+        // Uložit aktualizované balíčky, pokud nejsme v serverless prostředí
+        if (!isServerless) {
+            const DECKS_FILE = path.join(__dirname, 'data', 'decks.json');
+            fs.writeFileSync(DECKS_FILE, JSON.stringify(decks, null, 2));
+        }
+        
+        res.json({ 
+            success: true, 
+            decksCount: textDecks.length, 
+            added: addedCount, 
+            updated: updatedCount 
+        });
+    } catch (error) {
+        logError('Chyba při načítání textových balíčků:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Nastala chyba při načítání textových balíčků',
+            details: error.message
+        });
+    }
+});
+
 // ...existing code...

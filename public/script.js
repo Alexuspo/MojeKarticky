@@ -10,11 +10,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const homeSection = document.getElementById('home-section');
     const studySection = document.getElementById('study-section');
     const aboutSection = document.getElementById('about-section');
+    const loadTextSection = document.getElementById('load-text-section');
 
     // Navigace
     function showSection(section) {
         // Skrýt všechny sekce
-        [homeSection, studySection, aboutSection].forEach(s => {
+        [homeSection, studySection, aboutSection, loadTextSection].forEach(s => {
             s.classList.add('hidden-section');
             s.classList.remove('active-section');
         });
@@ -48,9 +49,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     loadTextDeckBtn.addEventListener('click', () => {
-        // Zde bude implementována funkcionalita pro načtení z textu
-        showSection(homeSection);
+        // Zobrazit sekci pro načítání textových kartiček
+        showSection(loadTextSection);
         loadTextDeckBtn.classList.add('active');
+        // Zkontrolovat dostupné textové balíčky
+        checkTextDecks();
     });
     
     aboutBtn.addEventListener('click', () => {
@@ -281,6 +284,67 @@ document.addEventListener('DOMContentLoaded', function() {
             [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
         }
         return newArray;
+    }
+
+    // Funkce pro kontrolu dostupných textových balíčků
+    function checkTextDecks() {
+        const textDecksContainer = document.getElementById('text-decks-container');
+        const noTextDecks = document.getElementById('no-text-decks');
+        const textLoading = document.getElementById('text-loading');
+        
+        // Zobrazit načítání
+        textDecksContainer.innerHTML = '';
+        noTextDecks.style.display = 'none';
+        textLoading.classList.remove('hidden');
+        
+        // Načíst textové balíčky ze serveru
+        fetch('/api/text-decks')
+            .then(response => response.json())
+            .then(data => {
+                textLoading.classList.add('hidden');
+                
+                if (!data || data.length === 0) {
+                    noTextDecks.style.display = 'block';
+                    return;
+                }
+                
+                displayDecks(data, textDecksContainer);
+            })
+            .catch(error => {
+                console.error('Chyba při kontrole textových balíčků:', error);
+                textLoading.classList.add('hidden');
+                noTextDecks.style.display = 'block';
+                noTextDecks.innerHTML = '<p>Nepodařilo se načíst textové balíčky. Zkontrolujte připojení k serveru.</p>';
+            });
+    }
+
+    // Přidání funkcionality pro automatické načtení textových kartiček
+    const autoLoadTextBtn = document.getElementById('autoLoadTextBtn');
+    if (autoLoadTextBtn) {
+        autoLoadTextBtn.addEventListener('click', () => {
+            const textLoading = document.getElementById('text-loading');
+            textLoading.classList.remove('hidden');
+            
+            fetch('/api/load-text-decks', {
+                method: 'POST',
+            })
+            .then(response => response.json())
+            .then(data => {
+                textLoading.classList.add('hidden');
+                
+                if (data.success) {
+                    alert(`Úspěšně načteno ${data.decksCount} textových balíčků.`);
+                    checkTextDecks(); // Znovu načíst a zobrazit balíčky
+                } else {
+                    alert('Nepodařilo se načíst textové balíčky: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Chyba při načítání textových balíčků:', error);
+                textLoading.classList.add('hidden');
+                alert('Nepodařilo se načíst textové balíčky. Zkontrolujte připojení k serveru.');
+            });
+        });
     }
 
     // Odstranění nepotřebných UI prvků
