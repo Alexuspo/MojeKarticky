@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = currentDeck.cards[index];
         
         // Zpracování speciálních karet s matematickými výpočty (pro náhodné balíčky)
-        if (card.front.includes('+') && card.back.includes('vypočítána')) {
+        if (card.front && card.front.includes('+') && card.back && card.back.includes('vypočítána')) {
             const matches = card.front.match(/Kolik je (\d+) \+ (\d+)/);
             if (matches && matches.length === 3) {
                 const num1 = parseInt(matches[1]);
@@ -322,8 +322,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        cardFront.innerHTML = card.front;
-        cardBack.innerHTML = card.back;
+        // Zajistit, že obsahy kartiček jsou definované
+        cardFront.innerHTML = card.front || 'Prázdná přední strana';
+        cardBack.innerHTML = card.back || 'Prázdná zadní strana';
         
         cardFront.classList.remove('hidden');
         cardBack.classList.add('hidden');
@@ -341,18 +342,27 @@ document.addEventListener('DOMContentLoaded', () => {
         progressText.textContent = `${currentCardIndex + 1}/${currentDeck.cards.length}`;
     }
 
-    // Ovládání kartiček
-    flipBtn.addEventListener('click', () => {
+    // Opravené ovládání kartiček
+    flipBtn.addEventListener('click', function() {
+        console.log('Kliknuto na tlačítko otočit');
         isCardFlipped = !isCardFlipped;
         
         if (isCardFlipped) {
+            // Skrýt přední stranu, zobrazit zadní
+            console.log('Otáčím kartičku - zobrazuji zadní stranu');
             cardFront.classList.add('hidden');
             cardBack.classList.remove('hidden');
+            
+            // Skrýt tlačítko otočit, zobrazit tlačítka hodnocení
             flipBtn.style.display = 'none';
             ratingBtns.classList.remove('hidden');
         } else {
+            // Zobrazit přední stranu, skrýt zadní
+            console.log('Otáčím kartičku - zobrazuji přední stranu');
             cardFront.classList.remove('hidden');
             cardBack.classList.add('hidden');
+            
+            // Zobrazit tlačítko otočit, skrýt tlačítka hodnocení
             flipBtn.style.display = 'block';
             ratingBtns.classList.add('hidden');
         }

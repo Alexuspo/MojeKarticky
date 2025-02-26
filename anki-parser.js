@@ -8,63 +8,75 @@ async function parseAnkiFile() {
 }
 
 /**
- * Vytvoří testovací balíček karet
+ * Vytvoří testovací balíček karet s literárním zaměřením
  * @returns {Object} - Testovací balíček
  */
 function createDummyDeck() {
-    const id = 'demo' + Math.floor(Math.random() * 1000);
+    const id = 'lit' + Math.floor(Math.random() * 1000);
     
     return {
         id,
-        name: 'Ukázkový balíček pro skauty',
+        name: 'Literatura-Test-karticky',
         cards: [
             {
-                id: 'card001',
-                front: 'Jak se jmenuje zakladatel skautingu?',
-                back: 'Robert Baden-Powell',
-                tags: ['skauting', 'historie']
+                id: 'lit001',
+                front: 'Kdo je autorem knihy Máj?',
+                back: 'Karel Hynek Mácha',
+                tags: ['literatura', 'česká literatura', '19. století']
             },
             {
-                id: 'card002',
-                front: 'Jaké je skautské heslo?',
-                back: 'Buď připraven!',
-                tags: ['skauting', 'základy']
+                id: 'lit002',
+                front: 'Ve kterém roce vydal Karel Čapek román R.U.R.?',
+                back: '1920',
+                tags: ['literatura', 'česká literatura', '20. století', 'sci-fi']
             },
             {
-                id: 'card003',
-                front: 'Co symbolizují tři prsty při skautském pozdravu?',
-                back: 'Tři body skautského slibu:<br>1. povinnost k Bohu a vlasti<br>2. pomoc bližnímu<br>3. poslušnost skautského zákona',
-                tags: ['skauting', 'symboly']
+                id: 'lit003',
+                front: 'Co je to Stínadla?',
+                back: 'Tajemná čtvrť ze série Rychlé šípy od Jaroslava Foglara',
+                tags: ['literatura', 'česká literatura', 'pro mládež']
             },
             {
-                id: 'card004',
-                front: 'Kolik je skautských zákonů?',
-                back: '10',
-                tags: ['skauting', 'základy']
+                id: 'lit004',
+                front: 'Který literární žánr je charakteristický nadpřirozenými jevy a strašidelnými prvky?',
+                back: 'Horor',
+                tags: ['literatura', 'žánry']
             },
             {
-                id: 'card005',
-                front: 'Vyjmenuj alespoň 3 skautské zákony:',
-                back: '1. Skaut je pravdomluvný<br>2. Skaut je věrný a oddaný<br>3. Skaut je prospěšný a pomáhá jiným<br>4. Skaut je přítelem všech lidí dobré vůle a bratrem každého skauta<br>5. Skaut je zdvořilý<br>6. Skaut je ochráncem přírody a cenných výtvorů lidských<br>7. Skaut je poslušný rodičů, představených a vůdců<br>8. Skaut je veselé mysli<br>9. Skaut je hospodárný<br>10. Skaut je čistý v myšlení, slovech i skutcích',
-                tags: ['skauting', 'zákony']
+                id: 'lit005',
+                front: 'Kdo napsal Babičku?',
+                back: 'Božena Němcová',
+                tags: ['literatura', 'česká literatura', '19. století']
             },
             {
-                id: 'card006',
-                front: 'Co je to skautská lilie?',
-                back: 'Základní skautský symbol, který připomíná severku na kompasu a ukazuje správný směr v životě',
-                tags: ['skauting', 'symboly']
+                id: 'lit006',
+                front: 'Co je to sonet?',
+                back: 'Básnická forma o 14 verších, obvykle rozdělená na dvě čtyřverší a dvě trojverší',
+                tags: ['literatura', 'poezie', 'formy']
             },
             {
-                id: 'card007',
-                front: 'Jakou barvu má skautský kroj pro skauty a skautky v ČR?',
-                back: 'Písková/béžová košile',
-                tags: ['skauting', 'kroj']
+                id: 'lit007',
+                front: 'Kdo je považován za otce science fiction?',
+                back: 'Jules Verne',
+                tags: ['literatura', 'světová literatura', 'sci-fi']
             },
             {
-                id: 'card008',
-                front: 'Kdy vznikl český skauting?',
-                back: 'V roce 1911',
-                tags: ['skauting', 'historie', 'čr']
+                id: 'lit008',
+                front: 'Jaká je hlavní myšlenka románu 1984 od George Orwella?',
+                back: 'Kritika totalitních režimů, sledování občanů a manipulace s pravdou',
+                tags: ['literatura', 'světová literatura', '20. století', 'dystopie']
+            },
+            {
+                id: 'lit009',
+                front: 'Jaký je rozdíl mezi lyrikou a epikou?',
+                back: 'Lyrika vyjadřuje pocity a nálady, zatímco epika vypráví příběh s dějem',
+                tags: ['literatura', 'teorie literatury']
+            },
+            {
+                id: 'lit010',
+                front: 'Co je to metafora?',
+                back: 'Básnický přenos významu na základě vnější či vnitřní podobnosti',
+                tags: ['literatura', 'stylistika']
             }
         ],
         created: new Date().toISOString(),
