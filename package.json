@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "check": "node check-files.js",
     "vercel-build": "echo 'Build proběhl úspěšně'"
   },
   "engines": {
