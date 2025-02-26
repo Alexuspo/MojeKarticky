@@ -134,6 +134,52 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Přidat nové tlačítko pro načtení textových kartiček, pokud takové existuje v HTML
+    const loadTextDeckBtn = document.getElementById('loadTextDeckBtn');
+    if (loadTextDeckBtn) {
+        loadTextDeckBtn.addEventListener('click', async () => {
+            if (isLoading) return;
+            
+            try {
+                isLoading = true;
+                loadTextDeckBtn.disabled = true;
+                loadTextDeckBtn.textContent = 'Načítám...';
+                
+                // Zobrazit načítání
+                noDecksMessage.textContent = 'Načítání textových kartiček...';
+                noDecksMessage.classList.remove('hidden');
+                decksContainer.innerHTML = '';
+                
+                // Zavolat API pro načtení textových kartiček
+                const response = await fetch('/api/load-text-decks');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showMessage(`Úspěšně načteno ${result.decks.length} balíčků z textových souborů`, 'success');
+                    
+                    // Po úspěšném načtení aktualizovat seznam balíčků
+                    loadDecks();
+                } else {
+                    showMessage(`Chyba: ${result.error || 'Neznámá chyba'}`, 'error');
+                    noDecksMessage.textContent = `Chyba při načítání textových kartiček: ${result.error || 'Neznámá chyba'}`;
+                    
+                    // Jako záložní řešení se pokusíme načíst existující balíčky
+                    loadDecks();
+                }
+            } catch (error) {
+                console.error('Chyba při načítání textových kartiček:', error);
+                showMessage('Došlo k chybě při komunikaci se serverem.', 'error');
+                
+                // Pokus o načtení existujících balíčků
+                loadDecks();
+            } finally {
+                isLoading = false;
+                loadTextDeckBtn.disabled = false;
+                loadTextDeckBtn.textContent = 'Načíst z textu';
+            }
+        });
+    }
+
     // Funkce pro zobrazení sekce
     function showSection(section) {
         // Skrýt všechny sekce
@@ -260,11 +306,17 @@ document.addEventListener('DOMContentLoaded', () => {
         decks.forEach(deck => {
             const deckElement = document.createElement('div');
             deckElement.className = 'deck-card';
+            
+            // Přidání indikátoru zdroje kartiček
+            const sourceLabel = deck.source === 'textfile' ? 
+                '<span class="source-label">Z textového souboru</span>' : '';
+                
             deckElement.innerHTML = `
                 <h3>${deck.name}</h3>
                 <div class="deck-stats">
                     <p>${deck.cards ? deck.cards.length : 0} kartiček</p>
                     <p>Přidáno: ${formatDate(deck.created)}</p>
+                    ${sourceLabel}
                 </div>
             `;
             

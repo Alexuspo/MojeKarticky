@@ -3,6 +3,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const ankiParser = require('./anki-parser');
+const textParser = require('./text-parser');
 
 // Konfigurace serveru
 const app = express();
@@ -19,13 +20,69 @@ app.use(express.static('public'));
 // Databáze kartiček (v paměti pro serverless, soubor pro lokální vývoj)
 let decks = [];
 
-// Pro Vercel vždy používáme Literatura-Test-karticky, protože nemůžeme číst/zapisovat soubory
-if (isServerless) {
+// API cesta pro načtení kartiček z textového souboru
+app.get('/api/load-text-decks', (req, res) => {
     try {
-        console.log('Serverless prostředí detekováno, používám Literatura-Test-karticky');
-        // Okamžitě vytvořit Literatura-Test-karticky
-        decks.push(ankiParser.getLiteraturaTestData());
-        console.log('Literatura-Test-karticky přidány do dostupných balíčků');
+        // Cesta ke složce s textovými soubory
+        const textFolderPath = path.join(__dirname, 'public', 'Karticky');
+        
+        // Načtení všech balíčků
+        const textDecks = textParser.loadAllTextDecks(textFolderPath);
+        
+        if (textDecks.length === 0) {
+            return res.status(404).json({ 
+                error: 'Nebyly nalezeny žádné textové soubory s kartičkami'
+            });
+        }
+        
+        // Přidat načtené balíčky do seznamu
+        for (const deck of textDecks) {
+            const existingIndex = decks.findIndex(d => d.name === deck.name);
+            if (existingIndex !== -1) {
+                decks[existingIndex] = deck;
+            } else {
+                decks.push(deck);
+            }
+        }
+        
+        // V lokálním prostředí ukládáme do souboru
+        if (!isServerless) {
+            try {
+                const DECKS_FILE = path.join(__dirname, 'data', 'decks.json');
+                fs.writeFileSync(DECKS_FILE, JSON.stringify(decks, null, 2));
+            } catch (saveErr) {
+                console.error('Chyba při ukládání balíčků:', saveErr);
+            }
+        }
+        
+        res.status(200).json({ 
+            message: `Úspěšně načteno ${textDecks.length} balíčků z textových souborů`,
+            decks: textDecks.map(d => ({ id: d.id, name: d.name, cardCount: d.cards.length }))
+        });
+    } catch (error) {
+        console.error('Chyba při načítání textových souborů:', error);
+        res.status(500).json({ 
+            error: 'Nastala chyba při načítání textových souborů',
+            details: error.message
+        });
+    }
+});
+
+// Inicializace aplikace
+if (isServerless) {
+    // Pro Vercel - najít a načíst balíčky z textového souboru
+    try {
+        console.log('Serverless prostředí detekováno, načítám Literatura-Test-karticky z textového souboru');
+        const textDeck = textParser.getLiteraturaFromTextFile();
+        
+        if (textDeck) {
+            decks.push(textDeck);
+            console.log('Úspěšně načteny kartičky z textového souboru');
+        } else {
+            const hardcodedDeck = ankiParser.getLiteraturaTestData();
+            decks.push(hardcodedDeck);
+            console.log('Použita záložní verze Literatura-Test-karticky');
+        }
     } catch (err) {
         console.error('Chyba při vytváření Literatura-Test-karticky:', err);
     }
@@ -57,10 +114,28 @@ if (isServerless) {
         console.error('Chyba při načítání balíčků:', error);
     }
     
-    // Pokud nemáme žádné balíčky, vytvoříme Literatura-Test-karticky
+    // Zkusit načíst Literatura-Test-karticky z textového souboru
+    try {
+        const textDeck = textParser.getLiteraturaFromTextFile();
+        
+        if (textDeck) {
+            // Aktualizovat nebo přidat do seznamu balíčků
+            const existingIndex = decks.findIndex(d => d.name === textDeck.name);
+            if (existingIndex !== -1) {
+                decks[existingIndex] = textDeck;
+            } else {
+                decks.push(textDeck);
+            }
+            console.log('Literatura-Test-karticky načteny z textového souboru');
+        }
+    } catch (textError) {
+        console.error('Chyba při načítání Literatura-Test-karticky z textového souboru:', textError);
+    }
+    
+    // Pokud nemáme žádné balíčky, vytvoříme Literatura-Test-karticky z hardcoded dat
     if (decks.length === 0) {
         decks.push(ankiParser.getLiteraturaTestData());
-        console.log('Literatura-Test-karticky přidány jako výchozí balíček');
+        console.log('Použita záložní verze Literatura-Test-karticky');
     }
 }
 
@@ -69,8 +144,8 @@ app.get('/api/load-default-deck', async (req, res) => {
     console.log('Požadavek na načtení výchozího balíčku');
     
     try {
-        // Vždy použijeme Literatura-Test-karticky
-        const literaturaDeck = ankiParser.getLiteraturaTestData();
+        // Nejprve zkusíme načíst Literatura-Test-karticky z textového souboru
+        const literaturaDeck = textParser.getLiteraturaFromTextFile() || ankiParser.getLiteraturaTestData();
         
         // Přidat nebo aktualizovat balíček
         const existingIndex = decks.findIndex(d => d.name === literaturaDeck.name);
@@ -92,7 +167,8 @@ app.get('/api/load-default-deck', async (req, res) => {
         
         return res.status(200).json({ 
             message: 'Literatura-Test-karticky byly úspěšně načteny', 
-            deckId: literaturaDeck.id
+            deckId: literaturaDeck.id,
+            source: literaturaDeck.source || 'unknown'
         });
     } catch (error) {
         console.error('Chyba při načítání Literatura-Test-karticky:', error);
@@ -151,7 +227,7 @@ app.get('/api/decks/:id', (req, res) => {
     console.log(`Hledám balíček s ID: ${req.params.id}`);
     const deck = decks.find(d => d.id === req.params.id);
     if (!deck) {
-        console.warn(`Balíček s ID ${req.params.id} nenalezen`);
+        console.warn(`Balíček s ID ${req.params.id nenalezen`);
         
         // Pokud balíček nenajdeme, vrátíme ukázkový
         const dummyDeck = ankiParser.createDummyDeck();

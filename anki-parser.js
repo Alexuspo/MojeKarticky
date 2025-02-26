@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const textParser = require('./text-parser');
 
 /**
  * Zpracuje Anki .apkg soubor a převede ho na formát použitelný v naší aplikaci
@@ -13,9 +14,16 @@ async function parseAnkiFile(filePath) {
     const isServerless = process.env.VERCEL || process.env.NOW;
 
     try {
-        // Pro serverless nebo pokud soubor neexistuje, vrátíme pevně definovaná data
+        // Nejprve zkusíme načíst data z textového souboru
+        const textDeck = textParser.getLiteraturaFromTextFile();
+        if (textDeck) {
+            console.log('Úspěšně načteny kartičky z textového souboru');
+            return textDeck;
+        }
+        
+        // Pokud selže načtení z textového souboru, použijeme ostatní metody
         if (isServerless || !filePath || !fs.existsSync(filePath)) {
-            console.log('Používám pevně definovaná data pro Literatura-Test-karticky.apkg');
+            console.log('Používám pevně definovaná data, protože textový soubor nebyl nalezen');
             return getLiteraturaTestData();
         }
 
@@ -43,6 +51,14 @@ async function parseAnkiFile(filePath) {
  * @returns {Object} - Data Literatura-Test-karticky
  */
 function getLiteraturaTestData() {
+    // Nejprve zkusíme načíst data z textového souboru
+    const textDeck = textParser.getLiteraturaFromTextFile();
+    if (textDeck) {
+        console.log('Vracím kartičky z textového souboru');
+        return textDeck;
+    }
+    
+    // Pokud není textový soubor k dispozici, pokračujeme s JSON nebo hardcoded verzí
     try {
         // Pokus o načtení dat z JSON souboru (pro lokální vývoj)
         const dataPath = path.join(__dirname, 'data', 'literatura-test-data.json');
