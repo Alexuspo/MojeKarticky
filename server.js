@@ -19,20 +19,19 @@ app.use(express.static('public'));
 // Databáze kartiček (v paměti pro serverless, soubor pro lokální vývoj)
 let decks = [];
 
-// Pro Vercel vždy používáme ukázkový balíček, protože nemůžeme číst/zapisovat soubory
+// Pro Vercel vždy používáme Literatura-Test-karticky, protože nemůžeme číst/zapisovat soubory
 if (isServerless) {
     try {
-        console.log('Serverless prostředí detekováno, používám ukázkový balíček');
-        // Okamžitě vytvořit ukázkový balíček
-        decks.push(ankiParser.createDummyDeck());
-        console.log('Vytvořen ukázkový balíček pro serverless prostředí');
+        console.log('Serverless prostředí detekováno, používám Literatura-Test-karticky');
+        // Okamžitě vytvořit Literatura-Test-karticky
+        decks.push(ankiParser.getLiteraturaTestData());
+        console.log('Literatura-Test-karticky přidány do dostupných balíčků');
     } catch (err) {
-        console.error('Chyba při vytváření ukázkového balíčku:', err);
+        console.error('Chyba při vytváření Literatura-Test-karticky:', err);
     }
 } else {
     // Pouze pro lokální vývoj
     const DECKS_FILE = path.join(__dirname, 'data', 'decks.json');
-    const DEFAULT_ANKI_FILE = path.join(__dirname, 'public', 'anki', 'default-deck.apkg');
     
     // Ujistit se, že složka existuje
     if (!fs.existsSync(path.join(__dirname, 'data'))) {
@@ -58,9 +57,10 @@ if (isServerless) {
         console.error('Chyba při načítání balíčků:', error);
     }
     
-    // Pokud nemáme žádné balíčky, vytvoříme ukázkový
+    // Pokud nemáme žádné balíčky, vytvoříme Literatura-Test-karticky
     if (decks.length === 0) {
-        decks.push(ankiParser.createDummyDeck());
+        decks.push(ankiParser.getLiteraturaTestData());
+        console.log('Literatura-Test-karticky přidány jako výchozí balíček');
     }
 }
 
@@ -69,15 +69,15 @@ app.get('/api/load-default-deck', async (req, res) => {
     console.log('Požadavek na načtení výchozího balíčku');
     
     try {
-        // V serverless prostředí vždy použijeme ukázkový balíček
-        const dummyDeck = ankiParser.createDummyDeck();
+        // Vždy použijeme Literatura-Test-karticky
+        const literaturaDeck = ankiParser.getLiteraturaTestData();
         
         // Přidat nebo aktualizovat balíček
-        const existingDummyIndex = decks.findIndex(d => d.name === dummyDeck.name);
-        if (existingDummyIndex !== -1) {
-            decks[existingDummyIndex] = dummyDeck;
+        const existingIndex = decks.findIndex(d => d.name === literaturaDeck.name);
+        if (existingIndex !== -1) {
+            decks[existingIndex] = literaturaDeck;
         } else {
-            decks.push(dummyDeck);
+            decks.push(literaturaDeck);
         }
         
         // V lokálním prostředí ukládáme do souboru
@@ -91,12 +91,11 @@ app.get('/api/load-default-deck', async (req, res) => {
         }
         
         return res.status(200).json({ 
-            message: 'Ukázkový balíček byl úspěšně načten', 
-            deckId: dummyDeck.id,
-            warning: isServerless ? 'Používám ukázkový balíček (serverless mód)' : undefined
+            message: 'Literatura-Test-karticky byly úspěšně načteny', 
+            deckId: literaturaDeck.id
         });
     } catch (error) {
-        console.error('Chyba při generování balíčku:', error);
+        console.error('Chyba při načítání Literatura-Test-karticky:', error);
         res.status(500).json({ 
             error: 'Nastala chyba při zpracování požadavku',
             details: error.message

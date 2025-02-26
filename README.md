@@ -2,9 +2,14 @@
 
 Jednoduchá webová aplikace pro studium s Anki kartičkami.
 
+## Výchozí balíček
+
+Aplikace obsahuje výchozí balíček **Literatura-Test-karticky**, který obsahuje otázky z literatury.
+Tento balíček je automaticky načten při prvním spuštění aplikace nebo při kliknutí na tlačítko "Načíst kartičky".
+
 ## Funkce
 
-- Načtení Anki balíčků z předem definovaného umístění
+- Načtení Literatura-Test-karticky s literárními otázkami
 - Prohlížení kartiček ve formátu otázka-odpověď
 - Hodnocení obtížnosti kartiček
 - Offline režim pro případ výpadku serveru
@@ -27,8 +32,6 @@ Jednoduchá webová aplikace pro studium s Anki kartičkami.
 ```bash
 npm install
 ```
-
-4. Umístěte váš Anki soubor (.apkg) do složky `public/anki/` a přejmenujte ho na `default-deck.apkg`
 
 #### Spuštění aplikace
 
@@ -58,7 +61,7 @@ vercel
 ## Použití aplikace
 
 1. Otevřete aplikaci ve webovém prohlížeči
-2. Klikněte na tlačítko "Načíst kartičky" pro načtení výchozího Anki balíčku
+2. Klikněte na tlačítko "Načíst kartičky" pro načtení balíčku Literatura-Test-karticky
 3. Po načtení klikněte na balíček pro zahájení studia
 4. Při studiu klikněte na tlačítko "Otočit" pro zobrazení odpovědi
 5. Ohodnoťte vaši znalost pomocí tlačítek pod kartou
