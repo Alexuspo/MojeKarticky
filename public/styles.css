@@ -342,7 +342,29 @@ footer {
 }
 
 .error-message {
-    color: #e74c3c;
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+/* Styly pro zprávy s varováním */
+.warning-message {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.actions-container {
+    margin-top: 15px;
+    text-align: center;
 }
 
 /* Progress bar */

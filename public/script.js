@@ -66,12 +66,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Funkce pro načtení balíčků ze serveru
     function loadDecks() {
+        const decksContainer = document.getElementById('decks-container');
+        const noDecks = document.getElementById('no-decks');
+        
+        // Zobrazit zprávu o načítání
+        decksContainer.innerHTML = '<div class="loading-indicator"><div class="spinner"></div><p>Načítám balíčky...</p></div>';
+        noDecks.style.display = 'none';
+        
+        // Přidat timeout pro detekci problémů s připojením
+        const timeout = setTimeout(() => {
+            console.warn('Požadavek na balíčky trvá nezvykle dlouho...');
+        }, 5000); // 5 sekund
+
         fetch('/api/decks')
-            .then(response => response.json())
+            .then(response => {
+                clearTimeout(timeout);
+                if (!response.ok) {
+                    throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(data => {
-                const decksContainer = document.getElementById('decks-container');
-                const noDecks = document.getElementById('no-decks');
-                
                 if (data.length === 0) {
                     decksContainer.innerHTML = '';
                     noDecks.style.display = 'block';
@@ -82,8 +97,68 @@ document.addEventListener('DOMContentLoaded', function() {
                 displayDecks(data, decksContainer);
             })
             .catch(error => {
+                clearTimeout(timeout);
                 console.error('Chyba při načítání balíčků:', error);
-                alert('Nepodařilo se načíst balíčky. Zkontrolujte připojení k serveru.');
+                
+                // Zkusit načíst lokálně uložené balíčky
+                const cachedDecks = localStorage.getItem('cachedDecks');
+                if (cachedDecks) {
+                    try {
+                        const decks = JSON.parse(cachedDecks);
+                        console.log('Používám lokálně uloženou kopii balíčků');
+                        displayDecks(decks, decksContainer);
+                        
+                        // Zobrazit varování o použití cache
+                        const warningElement = document.createElement('div');
+                        warningElement.className = 'warning-message';
+                        warningElement.innerHTML = 
+                            '<p>⚠️ Používáme lokálně uložené balíčky, protože se nepodařilo připojit k serveru.</p>' +
+                            '<button id="retryBtn" class="primary-btn">Zkusit znovu</button>';
+                        decksContainer.insertAdjacentElement('beforebegin', warningElement);
+                        
+                        document.getElementById('retryBtn').addEventListener('click', () => {
+                            warningElement.remove();
+                            loadDecks();
+                        });
+                        
+                        return;
+                    } catch (e) {
+                        console.error('Chyba při načítání lokálních balíčků:', e);
+                    }
+                }
+                
+                // Pokud nemáme ani lokální data, zobrazit detailní chybovou zprávu
+                decksContainer.innerHTML = '';
+                noDecks.style.display = 'block';
+                
+                // Přidat detailnější chybovou zprávu
+                let errorMessage = 'Nepodařilo se načíst balíčky. ';
+                
+                // Diagnostické informace
+                if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+                    errorMessage += 'Pravděpodobně není spuštěn server nebo je nedostupný. ';
+                    errorMessage += '<ol>' +
+                        '<li>Zkontrolujte, zda je server spuštěn (npm start)</li>' +
+                        '<li>Ujistěte se, že používáte správnou URL adresu</li>' +
+                        '<li>Zkuste restartovat server</li>' +
+                        '</ol>';
+                } else if (error.message.includes('HTTP chyba')) {
+                    errorMessage += `Server vrátil chybu: ${error.message}. `;
+                    errorMessage += 'Zkontrolujte logy serveru pro více informací.';
+                } else {
+                    errorMessage += `Důvod: ${error.message}`;
+                }
+                
+                errorMessage += '<div class="actions-container">' +
+                    '<button id="retryLoadBtn" class="primary-btn">Zkusit znovu</button>' +
+                    '</div>';
+                
+                noDecks.innerHTML = `<p class="error-message">${errorMessage}</p>`;
+                
+                // Přidat funkčnost tlačítku "Zkusit znovu"
+                document.getElementById('retryLoadBtn')?.addEventListener('click', () => {
+                    loadDecks();
+                });
             });
     }
 
@@ -297,54 +372,142 @@ document.addEventListener('DOMContentLoaded', function() {
         noTextDecks.style.display = 'none';
         textLoading.classList.remove('hidden');
         
+        // Timeout pro dlouhé požadavky
+        const timeout = setTimeout(() => {
+            console.warn('Požadavek na textové balíčky trvá nezvykle dlouho...');
+        }, 5000);
+        
         // Načíst textové balíčky ze serveru
         fetch('/api/text-decks')
-            .then(response => response.json())
+            .then(response => {
+                clearTimeout(timeout);
+                if (!response.ok) {
+                    throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 textLoading.classList.add('hidden');
                 
                 if (!data || data.length === 0) {
                     noTextDecks.style.display = 'block';
+                    // Automaticky spustíme načítání textových balíčků ze složky
+                    autoLoadTextDecks();
                     return;
+                }
+                
+                // Uložit data do mezipaměti
+                try {
+                    localStorage.setItem('cachedTextDecks', JSON.stringify(data));
+                } catch (e) {
+                    console.warn('Nelze uložit textové balíčky do mezipaměti:', e);
                 }
                 
                 displayDecks(data, textDecksContainer);
             })
             .catch(error => {
+                clearTimeout(timeout);
                 console.error('Chyba při kontrole textových balíčků:', error);
                 textLoading.classList.add('hidden');
+                
+                // Zkusit načíst lokálně uložené balíčky
+                const cachedTextDecks = localStorage.getItem('cachedTextDecks');
+                if (cachedTextDecks) {
+                    try {
+                        const decks = JSON.parse(cachedTextDecks);
+                        console.log('Používám lokálně uloženou kopii textových balíčků');
+                        displayDecks(decks, textDecksContainer);
+                        
+                        const warningElement = document.createElement('div');
+                        warningElement.className = 'warning-message';
+                        warningElement.innerHTML = 
+                            '<p>⚠️ Používáme lokálně uložené balíčky, protože se nepodařilo připojit k serveru.</p>' +
+                            '<button id="retryTextBtn" class="primary-btn">Zkusit znovu</button>';
+                        textDecksContainer.insertAdjacentElement('beforebegin', warningElement);
+                        
+                        document.getElementById('retryTextBtn').addEventListener('click', () => {
+                            warningElement.remove();
+                            checkTextDecks();
+                        });
+                        
+                        return;
+                    } catch (e) {
+                        console.error('Chyba při načítání lokálních textových balíčků:', e);
+                    }
+                }
+                
+                // Zobrazit chybovou zprávu s podrobnostmi
                 noTextDecks.style.display = 'block';
-                noTextDecks.innerHTML = '<p>Nepodařilo se načíst textové balíčky. Zkontrolujte připojení k serveru.</p>';
+                
+                // Detailnější chybová zpráva
+                let errorMessage = 'Nepodařilo se načíst textové balíčky. ';
+                
+                if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+                    errorMessage += 'Pravděpodobně není spuštěn server nebo je nedostupný. ';
+                    errorMessage += '<button id="autoLoadTextDecksBtn" class="primary-btn">Načíst z lokální složky</button>';
+                } else if (error.message.includes('HTTP chyba')) {
+                    errorMessage += `Server vrátil chybu: ${error.message}. `;
+                } else {
+                    errorMessage += `Důvod: ${error.message}`;
+                }
+                
+                noTextDecks.innerHTML = `<p class="error-message">${errorMessage}</p>`;
+                
+                // Přidat funkčnost tlačítku "Načíst z lokální složky"
+                document.getElementById('autoLoadTextDecksBtn')?.addEventListener('click', autoLoadTextDecks);
             });
+    }
+
+    // Funkce pro automatické načtení textových balíčků
+    function autoLoadTextDecks() {
+        const textLoading = document.getElementById('text-loading');
+        textLoading.classList.remove('hidden');
+        
+        fetch('/api/load-text-decks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            textLoading.classList.add('hidden');
+            
+            if (data.success) {
+                // Čekáme chvíli, aby bylo jasné, že se něco stalo
+                setTimeout(() => {
+                    alert(`Úspěšně načteno ${data.decksCount} textových balíčků.`);
+                    checkTextDecks(); // Znovu načíst a zobrazit balíčky
+                }, 500);
+            } else {
+                alert('Nepodařilo se načíst textové balíčky: ' + (data.error || 'Neznámá chyba'));
+            }
+        })
+        .catch(error => {
+            console.error('Chyba při načítání textových balíčků:', error);
+            textLoading.classList.add('hidden');
+            
+            let errorMessage = 'Nepodařilo se načíst textové balíčky. ';
+            
+            if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+                errorMessage += 'Zkontrolujte, zda je server spuštěn a dostupný.';
+            } else {
+                errorMessage += error.message;
+            }
+            
+            alert(errorMessage);
+        });
     }
 
     // Přidání funkcionality pro automatické načtení textových kartiček
     const autoLoadTextBtn = document.getElementById('autoLoadTextBtn');
     if (autoLoadTextBtn) {
-        autoLoadTextBtn.addEventListener('click', () => {
-            const textLoading = document.getElementById('text-loading');
-            textLoading.classList.remove('hidden');
-            
-            fetch('/api/load-text-decks', {
-                method: 'POST',
-            })
-            .then(response => response.json())
-            .then(data => {
-                textLoading.classList.add('hidden');
-                
-                if (data.success) {
-                    alert(`Úspěšně načteno ${data.decksCount} textových balíčků.`);
-                    checkTextDecks(); // Znovu načíst a zobrazit balíčky
-                } else {
-                    alert('Nepodařilo se načíst textové balíčky: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Chyba při načítání textových balíčků:', error);
-                textLoading.classList.add('hidden');
-                alert('Nepodařilo se načíst textové balíčky. Zkontrolujte připojení k serveru.');
-            });
-        });
+        autoLoadTextBtn.addEventListener('click', autoLoadTextDecks);
     }
 
     // Odstranění nepotřebných UI prvků

@@ -1,5 +1,32 @@
 // ...existing code...
 
+// API pro server status check
+app.get('/api/status', (req, res) => {
+    // Jednoduché API pro kontrolu dostupnosti serveru
+    res.json({ 
+        status: 'ok', 
+        serverTime: new Date().toISOString(),
+        decksCount: decks.length
+    });
+});
+
+// Upravená API pro získání balíčků s lepším zpracováním chyb
+app.get('/api/decks', (req, res) => {
+    logInfo('Požadavek na získání balíčků');
+    
+    try {
+        res.json(decks || []);
+    } catch (error) {
+        logError('Chyba při získávání balíčků:', error);
+        res.status(500).json({ 
+            error: 'Nastala chyba při získávání balíčků',
+            details: error.message
+        });
+    }
+});
+
+// ...existing code...
+
 // API pro resetování balíčků (užitečné pro vývoj a řešení problémů)
 app.post('/api/reset-decks', (req, res) => {
     logInfo('Požadavek na resetování všech balíčků');
@@ -90,8 +117,8 @@ app.get('/api/text-decks', (req, res) => {
     logInfo('Požadavek na získání textových balíčků');
     
     try {
-        // Filtrace balíčků podle zdroje ('textfile')
-        const textDecks = decks.filter(deck => deck.source === 'textfile');
+        // Filtrace balíčků podle zdroje ('textfile' nebo 'hardcoded')
+        const textDecks = decks.filter(deck => deck.source === 'textfile' || deck.source === 'hardcoded');
         
         logSuccess(`Nalezeno ${textDecks.length} textových balíčků`);
         res.json(textDecks);
