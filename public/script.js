@@ -394,14 +394,14 @@ document.addEventListener('DOMContentLoaded', () => {
         progressText.textContent = `${currentCardIndex + 1}/${currentDeck.cards.length}`;
     }
 
-    // Opravené ovládání kartiček
-    flipBtn.addEventListener('click', function() {
-        console.log('Kliknuto na tlačítko otočit');
+    // Funkce pro otáčení kartiček
+    function flipCard() {
+        console.log('Otáčím kartičku');
         isCardFlipped = !isCardFlipped;
         
         if (isCardFlipped) {
             // Skrýt přední stranu, zobrazit zadní
-            console.log('Otáčím kartičku - zobrazuji zadní stranu');
+            console.log('Zobrazuji zadní stranu');
             cardFront.classList.add('hidden');
             cardBack.classList.remove('hidden');
             
@@ -410,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ratingBtns.classList.remove('hidden');
         } else {
             // Zobrazit přední stranu, skrýt zadní
-            console.log('Otáčím kartičku - zobrazuji přední stranu');
+            console.log('Zobrazuji přední stranu');
             cardFront.classList.remove('hidden');
             cardBack.classList.add('hidden');
             
@@ -418,7 +418,57 @@ document.addEventListener('DOMContentLoaded', () => {
             flipBtn.style.display = 'block';
             ratingBtns.classList.add('hidden');
         }
-    });
+    }
+
+    // Posluchač události pro tlačítko otočit
+    flipBtn.addEventListener('click', flipCard);
+
+    // Přidání posluchače událostí pro samotnou kartičku
+    if (flashcard) {
+        flashcard.addEventListener('click', function(event) {
+            // Ignorovat kliknutí na tlačítka nebo jejich potomky
+            if (event.target.closest('button') || 
+                event.target.closest('#rating-btns')) {
+                return;
+            }
+            
+            // Otočit kartičku při kliknutí na ni
+            flipCard();
+        });
+    }
+
+    // Posluchač události pro přední stranu kartičky
+    if (cardFront) {
+        cardFront.addEventListener('click', function(event) {
+            // Zabránit bublání události, aby se neaktivovala dvakrát
+            event.stopPropagation();
+            
+            // Ignorovat kliknutí na tlačítka
+            if (event.target.closest('button')) {
+                return;
+            }
+            
+            // Otočit kartičku
+            flipCard();
+        });
+    }
+
+    // Posluchač události pro zadní stranu kartičky
+    if (cardBack) {
+        cardBack.addEventListener('click', function(event) {
+            // Zabránit bublání události, aby se neaktivovala dvakrát
+            event.stopPropagation();
+            
+            // Ignorovat kliknutí na tlačítka nebo hodnocení
+            if (event.target.closest('button') || 
+                event.target.closest('#rating-btns')) {
+                return;
+            }
+            
+            // Otočit kartičku zpět
+            flipCard();
+        });
+    }
 
     // Poslouchat na kliknutí na hodnocení
     document.querySelectorAll('.rating-btn').forEach(btn => {

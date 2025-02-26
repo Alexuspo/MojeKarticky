@@ -127,6 +127,7 @@ footer {
     min-height: 350px;
     perspective: 1000px;
     position: relative;
+    cursor: pointer; /* Přidáno: změna kurzoru na pointer, aby bylo jasné, že lze kliknout */
 }
 
 .card-side {
@@ -143,6 +144,7 @@ footer {
     font-size: 20px;
     overflow-y: auto;
     transition: all 0.3s ease;
+    cursor: pointer; /* Přidáno: změna kurzoru na pointer, aby bylo jasné, že lze kliknout */
 }
 
 /* Přidání stylu pro štítek zdroje */
@@ -185,6 +187,24 @@ footer {
 
 .hidden {
     display: none !important;
+}
+
+/* Přidání náznaku kliknutelnosti */
+.card-front:hover, .card-back:hover {
+    box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3); /* Přidáno: zvýraznění stínu při najetí myší */
+    transform: translateY(-2px); /* Přidáno: mírné nadzvednutí kartičky při najetí myší */
+}
+
+/* Přidání nápovědy k otáčení kartiček */
+.flashcard::after {
+    content: "Klikněte pro otočení";
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    font-size: 12px;
+    color: #95a5a6;
+    opacity: 0.7;
+    pointer-events: none; /* aby nápověda nebránila kliknutí na kartu */
 }
 
 /* Kontrolní tlačítka */
