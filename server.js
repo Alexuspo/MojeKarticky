@@ -12,26 +12,115 @@ const PORT = process.env.PORT || 3000;
 // Na Vercel použijeme In-memory úložiště místo souborového systému
 const isServerless = process.env.VERCEL || process.env.NOW;
 
+// Nastavení logování pro lepší diagnostiku
+function logInfo(message) {
+    console.log(`\x1b[36m[INFO]\x1b[0m ${message}`);
+}
+
+function logError(message, error) {
+    console.error(`\x1b[31m[ERROR]\x1b[0m ${message}`, error ? error : '');
+}
+
+function logWarning(message) {
+    console.warn(`\x1b[33m[WARNING]\x1b[0m ${message}`);
+}
+
+function logSuccess(message) {
+    console.log(`\x1b[32m[SUCCESS]\x1b[0m ${message}`);
+}
+
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: '*', // Povolit všechny origins pro vývoj
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
+
+// Middleware pro logování požadavků
+app.use((req, res, next) => {
+    logInfo(`${req.method} ${req.url}`);
+    next();
+});
+
+// Statické soubory
 app.use(express.static('public'));
 
 // Databáze kartiček (v paměti pro serverless, soubor pro lokální vývoj)
 let decks = [];
 
+// API cesta pro diagnostiku serveru
+app.get('/api/health', (req, res) => {
+    logInfo('Kontrola zdraví serveru');
+    try {
+        res.status(200).json({ 
+            status: 'ok', 
+            timestamp: new Date().toISOString(),
+            environment: isServerless ? 'serverless' : 'local',
+            decksCount: decks.length
+        });
+    } catch (error) {
+        logError('Chyba při kontrole zdraví serveru', error);
+        res.status(500).json({ error: 'Interní chyba serveru' });
+    }
+});
+
 // API cesta pro načtení kartiček z textového souboru
 app.get('/api/load-text-decks', (req, res) => {
+    logInfo('Požadavek na načtení textových kartiček');
     try {
         // Cesta ke složce s textovými soubory
         const textFolderPath = path.join(__dirname, 'public', 'Karticky');
+        
+        // Kontrola existence složky, případně ji vytvořit
+        if (!fs.existsSync(textFolderPath)) {
+            logWarning(`Složka ${textFolderPath} neexistuje, vytvářím ji`);
+            fs.mkdirSync(textFolderPath, { recursive: true });
+        }
         
         // Načtení všech balíčků
         const textDecks = textParser.loadAllTextDecks(textFolderPath);
         
         if (textDecks.length === 0) {
+            logWarning('Nebyly nalezeny žádné textové soubory s kartičkami');
+            
+            // Kontrola existence souboru a případné vytvoření ukázkového
+            const defaultFilePath = path.join(textFolderPath, 'Literatura - Test karticky..txt');
+            if (!fs.existsSync(defaultFilePath)) {
+                logWarning(`Vytvářím ukázkový soubor ${defaultFilePath}`);
+                try {
+                    // Vytvořit ukázkový soubor
+                    require('./setup');
+                    
+                    // Znovu zkusit načíst balíčky
+                    const newTextDecks = textParser.loadAllTextDecks(textFolderPath);
+                    if (newTextDecks.length > 0) {
+                        logSuccess('Úspěšně vytvořen a načten ukázkový soubor s kartičkami');
+                        
+                        // Přidat načtené balíčky do seznamu
+                        for (const deck of newTextDecks) {
+                            const existingIndex = decks.findIndex(d => d.name === deck.name);
+                            if (existingIndex !== -1) {
+                                decks[existingIndex] = deck;
+                            } else {
+                                decks.push(deck);
+                            }
+                        }
+                        
+                        return res.status(200).json({
+                            message: `Úspěšně vytvořen a načten ukázkový balíček`,
+                            decks: newTextDecks.map(d => ({ id: d.id, name: d.name, cardCount: d.cards.length }))
+                        });
+                    }
+                } catch (setupErr) {
+                    logError('Chyba při vytváření ukázkového souboru', setupErr);
+                }
+            }
+            
             return res.status(404).json({ 
-                error: 'Nebyly nalezeny žádné textové soubory s kartičkami'
+                error: 'Nebyly nalezeny žádné textové soubory s kartičkami',
+                solution: 'Byl vytvořen ukázkový soubor, zkuste požadavek znovu'
             });
         }
         
@@ -49,21 +138,27 @@ app.get('/api/load-text-decks', (req, res) => {
         if (!isServerless) {
             try {
                 const DECKS_FILE = path.join(__dirname, 'data', 'decks.json');
+                if (!fs.existsSync(path.dirname(DECKS_FILE))) {
+                    fs.mkdirSync(path.dirname(DECKS_FILE), { recursive: true });
+                }
                 fs.writeFileSync(DECKS_FILE, JSON.stringify(decks, null, 2));
+                logSuccess(`Balíčky uloženy do ${DECKS_FILE}`);
             } catch (saveErr) {
-                console.error('Chyba při ukládání balíčků:', saveErr);
+                logError('Chyba při ukládání balíčků', saveErr);
             }
         }
         
+        logSuccess(`Úspěšně načteno ${textDecks.length} balíčků z textových souborů`);
         res.status(200).json({ 
             message: `Úspěšně načteno ${textDecks.length} balíčků z textových souborů`,
             decks: textDecks.map(d => ({ id: d.id, name: d.name, cardCount: d.cards.length }))
         });
     } catch (error) {
-        console.error('Chyba při načítání textových souborů:', error);
+        logError('Chyba při načítání textových souborů', error);
         res.status(500).json({ 
             error: 'Nastala chyba při načítání textových souborů',
-            details: error.message
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 });
@@ -72,19 +167,19 @@ app.get('/api/load-text-decks', (req, res) => {
 if (isServerless) {
     // Pro Vercel - najít a načíst balíčky z textového souboru
     try {
-        console.log('Serverless prostředí detekováno, načítám Literatura-Test-karticky z textového souboru');
+        logInfo('Serverless prostředí detekováno, načítám Literatura-Test-karticky z textového souboru');
         const textDeck = textParser.getLiteraturaFromTextFile();
         
         if (textDeck) {
             decks.push(textDeck);
-            console.log('Úspěšně načteny kartičky z textového souboru');
+            logSuccess('Úspěšně načteny kartičky z textového souboru');
         } else {
             const hardcodedDeck = ankiParser.getLiteraturaTestData();
             decks.push(hardcodedDeck);
-            console.log('Použita záložní verze Literatura-Test-karticky');
+            logWarning('Použita záložní verze Literatura-Test-karticky');
         }
     } catch (err) {
-        console.error('Chyba při vytváření Literatura-Test-karticky:', err);
+        logError('Chyba při vytváření Literatura-Test-karticky', err);
     }
 } else {
     // Pouze pro lokální vývoj
@@ -95,7 +190,7 @@ if (isServerless) {
         try {
             fs.mkdirSync(path.join(__dirname, 'data'));
         } catch (err) {
-            console.error('Chyba při vytváření složky data:', err);
+            logError('Chyba při vytváření složky data', err);
         }
     }
     
@@ -105,13 +200,13 @@ if (isServerless) {
             const data = fs.readFileSync(DECKS_FILE, 'utf8');
             try {
                 decks = JSON.parse(data);
-                console.log(`Načteno ${decks.length} balíčků z disku`);
+                logSuccess(`Načteno ${decks.length} balíčků z disku`);
             } catch (parseErr) {
-                console.error('Chyba při parsování decks.json:', parseErr);
+                logError('Chyba při parsování decks.json', parseErr);
             }
         }
     } catch (error) {
-        console.error('Chyba při načítání balíčků:', error);
+        logError('Chyba při načítání balíčků', error);
     }
     
     // Zkusit načíst Literatura-Test-karticky z textového souboru
@@ -126,22 +221,22 @@ if (isServerless) {
             } else {
                 decks.push(textDeck);
             }
-            console.log('Literatura-Test-karticky načteny z textového souboru');
+            logSuccess('Literatura-Test-karticky načteny z textového souboru');
         }
     } catch (textError) {
-        console.error('Chyba při načítání Literatura-Test-karticky z textového souboru:', textError);
+        logError('Chyba při načítání Literatura-Test-karticky z textového souboru', textError);
     }
     
     // Pokud nemáme žádné balíčky, vytvoříme Literatura-Test-karticky z hardcoded dat
     if (decks.length === 0) {
         decks.push(ankiParser.getLiteraturaTestData());
-        console.log('Použita záložní verze Literatura-Test-karticky');
+        logWarning('Použita záložní verze Literatura-Test-karticky');
     }
 }
 
 // API Endpoint pro načtení výchozího balíčku
 app.get('/api/load-default-deck', async (req, res) => {
-    console.log('Požadavek na načtení výchozího balíčku');
+    logInfo('Požadavek na načtení výchozího balíčku');
     
     try {
         // Nejprve zkusíme načíst Literatura-Test-karticky z textového souboru
@@ -161,7 +256,7 @@ app.get('/api/load-default-deck', async (req, res) => {
                 const DECKS_FILE = path.join(__dirname, 'data', 'decks.json');
                 fs.writeFileSync(DECKS_FILE, JSON.stringify(decks, null, 2));
             } catch (saveErr) {
-                console.error('Chyba při ukládání balíčků:', saveErr);
+                logError('Chyba při ukládání balíčků', saveErr);
             }
         }
         
@@ -171,7 +266,7 @@ app.get('/api/load-default-deck', async (req, res) => {
             source: literaturaDeck.source || 'unknown'
         });
     } catch (error) {
-        console.error('Chyba při načítání Literatura-Test-karticky:', error);
+        logError('Chyba při načítání Literatura-Test-karticky', error);
         res.status(500).json({ 
             error: 'Nastala chyba při zpracování požadavku',
             details: error.message
@@ -181,7 +276,7 @@ app.get('/api/load-default-deck', async (req, res) => {
 
 // API pro vytvoření náhodného balíčku (pro testování)
 app.post('/api/create-random-deck', (req, res) => {
-    console.log('Požadavek na vytvoření náhodného balíčku');
+    logInfo('Požadavek na vytvoření náhodného balíčku');
     const { name, count } = req.body;
     
     try {
@@ -194,7 +289,7 @@ app.post('/api/create-random-deck', (req, res) => {
                 const DECKS_FILE = path.join(__dirname, 'data', 'decks.json');
                 fs.writeFileSync(DECKS_FILE, JSON.stringify(decks, null, 2));
             } catch (saveErr) {
-                console.error('Chyba při ukládání balíčků:', saveErr);
+                logError('Chyba při ukládání balíčků', saveErr);
             }
         }
         
@@ -203,55 +298,98 @@ app.post('/api/create-random-deck', (req, res) => {
             deckId: randomDeck.id 
         });
     } catch (error) {
-        console.error('Chyba při vytváření náhodného balíčku:', error);
+        logError('Chyba při vytváření náhodného balíčku', error);
         res.status(500).json({ error: 'Chyba při vytváření náhodného balíčku' });
     }
 });
 
 // Získat všechny balíčky
 app.get('/api/decks', (req, res) => {
-    console.log(`Odesílám ${decks.length} balíčků klientovi`);
+    logInfo(`Požadavek na získání všech balíčků (počet: ${decks.length})`);
     
-    // Pokud nemáme žádné balíčky, vytvoříme ukázkový
-    if (decks.length === 0) {
-        const dummyDeck = ankiParser.createDummyDeck();
-        decks.push(dummyDeck);
-        console.log('Vytvořen ukázkový balíček, protože databáze byla prázdná');
+    try {
+        // Pokud nemáme žádné balíčky, zkusíme nejprve načíst z textového souboru
+        if (decks.length === 0) {
+            logWarning('Žádné balíčky nejsou k dispozici, zkouším načíst z textových souborů');
+            
+            try {
+                const textFolderPath = path.join(__dirname, 'public', 'Karticky');
+                if (!fs.existsSync(textFolderPath)) {
+                    fs.mkdirSync(textFolderPath, { recursive: true });
+                    logInfo('Vytvořena složka Karticky');
+                }
+                
+                const textDeck = textParser.getLiteraturaFromTextFile();
+                if (textDeck) {
+                    decks.push(textDeck);
+                    logSuccess('Úspěšně načten balíček kartiček z textového souboru');
+                } else {
+                    // Pokud ani to nefunguje, vytvoříme ukázkový
+                    const dummyDeck = ankiParser.createDummyDeck();
+                    decks.push(dummyDeck);
+                    logWarning('Vytvořen ukázkový balíček, protože nebyl nalezen žádný soubor s kartičkami');
+                }
+            } catch (textError) {
+                logError('Chyba při pokusu načíst textový balíček, přecházím na ukázkový', textError);
+                const dummyDeck = ankiParser.createDummyDeck();
+                decks.push(dummyDeck);
+                logWarning('Vytvořen ukázkový balíček kvůli chybě při načítání textového souboru');
+            }
+        }
+        
+        logSuccess(`Odesílám ${decks.length} balíčků klientovi`);
+        res.json(decks);
+    } catch (error) {
+        logError('Chyba při získávání všech balíčků', error);
+        res.status(500).json({ 
+            error: 'Nastala chyba při získávání balíčků',
+            details: error.message 
+        });
     }
-    
-    res.json(decks);
 });
 
 // Získat konkrétní balíček
 app.get('/api/decks/:id', (req, res) => {
-    console.log(`Hledám balíček s ID: ${req.params.id}`);
-    const deck = decks.find(d => d.id === req.params.id);
-    if (!deck) {
-        console.warn(`Balíček s ID ${req.params.id} nenalezen`); // Opravená syntaktická chyba - chyběla závorka
+    logInfo(`Hledám balíček s ID: ${req.params.id}`);
+    try {
+        const deck = decks.find(d => d.id === req.params.id);
+        if (!deck) {
+            logWarning(`Balíček s ID ${req.params.id} nenalezen`);
+            
+            // Pokud balíček nenajdeme, vrátíme ukázkový
+            const dummyDeck = ankiParser.createDummyDeck();
+            logInfo('Vracím ukázkový balíček jako náhradu');
+            return res.json(dummyDeck);
+        }
         
-        // Pokud balíček nenajdeme, vrátíme ukázkový
-        const dummyDeck = ankiParser.createDummyDeck();
-        return res.json(dummyDeck);
+        logSuccess(`Balíček s ID ${req.params.id} úspěšně nalezen`);
+        res.json(deck);
+    } catch (error) {
+        logError(`Chyba při hledání balíčku s ID ${req.params.id}`, error);
+        res.status(500).json({ 
+            error: 'Nastala chyba při hledání balíčku',
+            details: error.message
+        });
     }
-    res.json(deck);
 });
 
 // Přidat obecné ošetření chyb
 app.use((err, req, res, next) => {
-    console.error('Neošetřená chyba:', err);
+    logError('Neošetřená chyba', err);
     res.status(500).json({ 
         error: 'Došlo k chybě na serveru',
-        details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
 });
 
 // Pro Vercel exportujeme aplikaci
 if (isServerless) {
-    console.log('Exportuji Express aplikaci pro serverless prostředí');
+    logInfo('Exportuji Express aplikaci pro serverless prostředí');
     module.exports = app;
 } else {
     // Spustit server
     app.listen(PORT, () => {
-        console.log(`Server běží na http://localhost:${PORT}`);
+        logSuccess(`Server běží na http://localhost:${PORT}`);
     });
 }

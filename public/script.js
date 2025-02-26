@@ -502,4 +502,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Načíst balíčky při prvním spuštění
     loadDecks();
+    
+    // Přidání kódu pro lepší diagnostiku komunikace se serverem
+    const API_BASE = window.location.hostname === 'localhost' ? `http://localhost:${window.location.port || 3000}` : '';
+
+    /**
+     * Vylepšená funkce pro volání API s lepším ošetřením chyb
+     * @param {string} endpoint - API endpoint
+     * @param {Object} options - Volby pro fetch
+     * @returns {Promise} - Výsledek API volání
+     */
+    async function callApi(endpoint, options = {}) {
+        const url = `${API_BASE}/api/${endpoint}`;
+        
+        try {
+            console.log(`Volám API: ${url}`);
+            
+            // Přidáme timeout pro detekci problémů s připojením
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 sekund timeout
+            
+            const response = await fetch(url, {
+                ...options,
+                signal: controller.signal,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                console.error(`API chyba (${response.status}):`, await response.text());
+                
+                // Kontrola běžných stavových kódů
+                if (response.status === 404) {
+                    throw new Error('Požadovaný zdroj nebyl nalezen');
+                } else if (response.status === 500) {
+                    throw new Error('Interní chyba serveru');
+                } else {
+                    throw new Error(`HTTP chyba ${response.status}`);
+                }
+            }
+            
+            // Pokusíme se zpracovat odpověď jako JSON
+            try {
+                return await response.json();
+            } catch (jsonError) {
+                console.warn('Odpověď není platný JSON:', jsonError);
+                return null;
+            }
+        } catch (error) {
+            // Detek
+        }
+    }
 });
