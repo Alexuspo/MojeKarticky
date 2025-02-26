@@ -15,7 +15,8 @@
     "vercel-build": "echo 'Build proběhl úspěšně'",
     "download-images": "node image-downloader.js",
     "load-decks": "node load-all-decks.js",
-    "load-abstraktni": "node load-specific-deck.js"
+    "load-abstraktni": "node load-specific-deck.js",
+    "install-art": "node install-art-deck.js"
   },
   "engines": {
     "node": ">=14.0.0"
