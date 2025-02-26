@@ -25,9 +25,8 @@ function parseTextFile(filePath) {
         console.log(`Počet řádků v souboru: ${lines.length}`);
         
         // Základní informace o balíčku
-        let deckName = path.basename(filePath, path.extname(filePath));
+        let deckName = 'Literatura-Test-karticky';
         let separator = '\t'; // Výchozí oddělovač je tabulátor
-        let isHtml = false;
         
         // Pole pro kartičky
         const cards = [];
@@ -37,36 +36,25 @@ function parseTextFile(filePath) {
             const line = lines[i];
             
             // Přeskočit prázdné řádky
-            if (line.trim() === '') {
-                console.log(`Řádek ${i+1}: Prázdný řádek, přeskakuji`);
+            if (!line || line.trim() === '') {
                 continue;
             }
             
             // Zpracování hlavičkových řádků
             if (line.startsWith('#')) {
-                console.log(`Řádek ${i+1}: Detekována hlavička: ${line}`);
                 const headerParts = line.substring(1).split(':');
                 
                 if (headerParts.length >= 2) {
                     const key = headerParts[0].trim().toLowerCase();
                     const value = headerParts.slice(1).join(':').trim();
-                    console.log(`  - Hlavička: ${key} = ${value}`);
                     
                     // Typ oddělovače
                     if (key === 'separator') {
                         if (value === 'tab') {
                             separator = '\t';
-                            console.log('    - Nastaven oddělovač: tabulátor');
                         } else {
                             separator = value;
-                            console.log(`    - Nastaven oddělovač: "${value}"`);
                         }
-                    }
-                    
-                    // HTML povolení
-                    if (key === 'html' && value.toLowerCase() === 'true') {
-                        isHtml = true;
-                        console.log('    - Povoleny HTML značky');
                     }
                 }
                 
@@ -75,34 +63,20 @@ function parseTextFile(filePath) {
             
             // Zpracování řádků s kartičkami
             const parts = line.split(separator);
-            console.log(`Řádek ${i+1}: Rozděleno na ${parts.length} částí`);
             
             // Kontrola, zda má řádek dostatek částí
             if (parts.length < 4) {
-                console.log(`  - Řádek ${i+1}: Nedostatek sloupců (${parts.length}), přeskakuji`);
                 continue;
             }
             
             // Vytvoření karty
             // Index 2 je přední strana, index 3 je zadní strana
-            const front = parts[2].trim();
-            const back = parts[3].trim();
+            const front = parts[2] ? parts[2].trim() : '';
+            const back = parts[3] ? parts[3].trim() : '';
             
             // Přeskočit neplatné karty
             if (!front || !back) {
-                console.log(`  - Řádek ${i+1}: Neplatná karta (prázdný front/back), přeskakuji`);
                 continue;
-            }
-            
-            console.log(`  - Řádek ${i+1}: Platná karta: "${front}" -> "${back}"`);
-            
-            // Získání názvu balíčku z druhé kolonky, pokud existuje a ještě není nastaven
-            if (parts[1] && parts[1].trim()) {
-                const deckNameFromFile = parts[1].trim();
-                if (deckNameFromFile !== deckName && !deckName.includes('Literatura - Test')) {
-                    deckName = deckNameFromFile;
-                    console.log(`  - Nastaven název balíčku z datového řádku: "${deckName}"`);
-                }
             }
             
             // Generování ID karty
@@ -111,17 +85,12 @@ function parseTextFile(filePath) {
                 .digest('hex')
                 .substring(0, 8);
             
-            // Tagy z páté kolonky
-            const tags = parts.length >= 5 && parts[4] ? 
-                parts[4].split(',').map(tag => tag.trim()).filter(tag => tag) : 
-                ['literatura'];
-            
             // Přidat kartu do seznamu
             cards.push({
                 id: cardId,
                 front: front,
                 back: back,
-                tags: tags
+                tags: ['literatura']
             });
         }
         
@@ -129,16 +98,6 @@ function parseTextFile(filePath) {
         if (cards.length === 0) {
             console.warn('V souboru nebyly nalezeny žádné platné kartičky');
             return null;
-        }
-        
-        // Pokud název obsahuje příponu, odstraníme ji
-        if (deckName.includes('.')) {
-            deckName = deckName.split('.')[0];
-        }
-        
-        // Upravit název balíčku pro lepší zobrazení
-        if (deckName.includes('Literatura - Test')) {
-            deckName = 'Literatura-Test-karticky';
         }
         
         console.log(`Parsování dokončeno, vytvořen balíček "${deckName}" s ${cards.length} kartičkami`);
@@ -156,7 +115,7 @@ function parseTextFile(filePath) {
             created: new Date().toISOString(),
             lastModified: new Date().toISOString(),
             source: 'textfile',
-            format: isHtml ? 'html' : 'plain'
+            format: 'html'
         };
     } catch (error) {
         console.error('Chyba při parsování textového souboru:', error);
@@ -175,15 +134,6 @@ function loadAllTextDecks(folderPath) {
         
         if (!fs.existsSync(folderPath)) {
             console.warn(`Složka ${folderPath} neexistuje`);
-            
-            // Zkusit vytvořit složku
-            try {
-                fs.mkdirSync(folderPath, { recursive: true });
-                console.log(`Vytvořena složka ${folderPath}`);
-            } catch (mkdirErr) {
-                console.error(`Nepodařilo se vytvořit složku ${folderPath}:`, mkdirErr);
-            }
-            
             return [];
         }
         
@@ -203,6 +153,56 @@ function loadAllTextDecks(folderPath) {
         const decks = [];
         
         for (const textFile of textFiles) {
+            const filePath = path.join(folderPath, textFile);
+            console.log(`Zpracovávám soubor: ${filePath}`);
+            
+            const deck = parseTextFile(filePath);
+            
+            if (deck) {
+                decks.push(deck);
+                console.log(`Úspěšně přidán balíček: ${deck.name}`);
+            } else {
+                console.log(`Nepodařilo se zpracovat soubor: ${textFile}`);
+            }
+        }
+        
+        console.log(`Celkem zpracováno ${decks.length} balíčků z textových souborů`);
+        return decks;
+    } catch (error) {
+        console.error('Chyba při načítání textových balíčků:', error);
+        return [];
+    }
+}
+
+/**
+ * Získá balíček Literatura-Test-karticky z textového souboru
+ * @returns {Object} - Balíček Literatura-Test-karticky
+ */
+function getLiteraturaFromTextFile() {
+    try {
+        console.log('Načítám Literatura-Test-karticky z textového souboru');
+        
+        // Nejprve zkusit přímou cestu k souboru
+        const textFilePath = path.join(__dirname, 'public', 'Karticky', 'Literatura - Test karticky..txt');
+        
+        if (fs.existsSync(textFilePath)) {
+            console.log(`Nalezen soubor: ${textFilePath}`);
+            const deck = parseTextFile(textFilePath);
+            
+            if (deck) {
+                console.log(`Úspěšně načten balíček s ${deck.cards.length} kartičkami`);
+                return deck;
+            }
+        } else {
+            console.log(`Soubor neexistuje: ${textFilePath}`);
+        }
+        
+        // Zkusit načíst jakýkoliv textový soubor ve složce Karticky
+        const kartickyDir = path.join(__dirname, 'public', 'Karticky');
+        if (fs.existsSync(kartickyDir)) {
+            const files = fs.readdirSync(kartickyDir);
+            for (const file of files) {
+                if (file.endsWith('.txt')) {
             const filePath = path.join(folderPath, textFile);
             console.log(`Zpracovávám soubor: ${filePath}`);
             

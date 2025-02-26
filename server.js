@@ -227,7 +227,7 @@ app.get('/api/decks/:id', (req, res) => {
     console.log(`Hledám balíček s ID: ${req.params.id}`);
     const deck = decks.find(d => d.id === req.params.id);
     if (!deck) {
-        console.warn(`Balíček s ID ${req.params.id nenalezen`);
+        console.warn(`Balíček s ID ${req.params.id} nenalezen`); // Opravená syntaktická chyba - chyběla závorka
         
         // Pokud balíček nenajdeme, vrátíme ukázkový
         const dummyDeck = ankiParser.createDummyDeck();
