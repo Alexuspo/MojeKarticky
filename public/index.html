@@ -13,6 +13,7 @@
             <button id="homeBtn" class="nav-btn active">Domů</button>
             <button id="studyBtn" class="nav-btn">Studovat</button>
             <button id="loadDeckBtn" class="nav-btn">Načíst kartičky</button>
+            <button id="aboutBtn" class="nav-btn">O aplikaci</button>
         </nav>
     </header>
 
@@ -52,8 +53,53 @@
                     <button data-rating="5" class="rating-btn">Snadné</button>
                 </div>
             </div>
+
+            <div class="study-actions">
+                <button id="endSessionBtn" class="secondary-btn">Ukončit studium</button>
+                <button id="restartSessionBtn" class="secondary-btn">Začít znovu</button>
+            </div>
+        </section>
+
+        <!-- Sekce O aplikaci -->
+        <section id="about-section" class="hidden-section">
+            <h2>O aplikaci Moje Kartičky</h2>
+            <div class="about-content">
+                <p>Moje Kartičky je jednoduchá webová aplikace pro studium s kartičkami typu otázka-odpověď.</p>
+                <p>Aplikace umožňuje načíst kartičky z Anki balíčku a procházet je pro efektivní učení.</p>
+                
+                <h3>Jak používat aplikaci</h3>
+                <ol>
+                    <li>Umístěte Anki balíček s názvem <code>default-deck.apkg</code> do složky <code>public/anki/</code></li>
+                    <li>Klikněte na tlačítko "Načíst kartičky" v hlavním menu</li>
+                    <li>Klikněte na balíček, který chcete studovat</li>
+                    <li>Procházejte kartičky a hodnoťte svou znalost</li>
+                </ol>
+                
+                <h3>Ovládání kartiček</h3>
+                <ul>
+                    <li><strong>Otočit</strong> - zobrazí odpověď na kartičku</li>
+                    <li><strong>Znovu</strong> - kartička byla obtížná, budu se k ní muset vrátit</li>
+                    <li><strong>Těžké</strong> - odpověď jsem věděl/a, ale s obtížemi</li>
+                    <li><strong>Dobré</strong> - odpověď jsem věděl/a bez problémů</li>
+                    <li><strong>Snadné</strong> - odpověď byla velmi jednoduchá</li>
+                </ul>
+            </div>
         </section>
     </main>
+
+    <!-- Modální okna -->
+    <div id="deck-details-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 id="modal-deck-title"></h2>
+            <div id="deck-details"></div>
+            <div class="modal-actions">
+                <button id="study-deck-btn" class="primary-btn">Studovat</button>
+                <button id="reset-deck-btn" class="secondary-btn">Resetovat</button>
+                <button id="delete-deck-btn" class="danger-btn">Smazat</button>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <p>Moje Kartičky &copy; 2023 - Aplikace pro studium s Anki kartičkami</p>

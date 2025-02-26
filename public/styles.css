@@ -31,6 +31,7 @@ header h1 {
 nav {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .nav-btn {
