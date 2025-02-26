@@ -499,6 +499,37 @@ footer {
     margin-top: 10px;
 }
 
+/* Výraznější indikátor načítání */
+.loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #e9ecef;
+}
+
+.loading-indicator .spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid rgba(0,0,0,0.1);
+    border-radius: 50%;
+    border-left-color: #3498db;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+.loading-indicator p {
+    color: #666;
+    margin-top: 15px;
+    font-size: 16px;
+}
+
 /* Toast zprávy */
 .toast {
     position: fixed;

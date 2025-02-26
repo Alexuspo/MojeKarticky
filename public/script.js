@@ -195,16 +195,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Přidat indikátor načítání
         const studySection = document.getElementById('study-section');
-        if (studySection) {
+        if (studySection) {{
             studySection.innerHTML = '<div class="loading-indicator"><div class="spinner"></div><p>Načítám balíček...</p></div>';
+        }   return;
         }
-
         // Zobrazit sekci studia již během načítání
-        showSection(studySection);
+        showSection(studySection);<div class="loading-indicator"><div class="spinner"></div><p>Načítám balíček...</p></div>';
         studyBtn.classList.add('active');
-        
+        // Zobrazit sekci studia již během načítání
         fetch(`/api/decks/${deckId}`)
-            .then(response => {
+            .then(response => {'active');
+                if (!response.ok) {
+                    throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
+                }pi/decks/${deckId}`)
+                return response.json();
                 if (!response.ok) {
                     throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
                 }
@@ -215,101 +219,85 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (!deck.cards || deck.cards.length === 0) {
                     console.error('Balíček neobsahuje žádné kartičky', deck);
-                    
-                    // Obnovit původní obsah sekce studia
-                    fetch('/study-section-template.html')
-                        .then(response => response.text())
-                        .then(template => {
-                            studySection.innerHTML = template;
-                            alert('Balíček neobsahuje žádné kartičky.');
-                            showSection(homeSection);
-                            homeBtn.classList.add('active');
-                        })
-                        .catch(err => {
-                            studySection.innerHTML = '<div class="error-message">Chyba při načítání šablony studia</div>';
-                            setTimeout(() => {
-                                location.reload();
-                            }, 2000);
-                        });
+                    alert('Balíček neobsahuje žádné kartičky. Vracím se na domovskou stránku.');
+                    showSection(homeSection);
+                    homeBtn.classList.add('active');
                     return;
                 }
                 
-                // Obnovit původní obsah sekce studia
-                fetch('/study-section-template.html')
-                    .then(response => response.text())
-                    .then(template => {
-                        studySection.innerHTML = template;
-                        
-                        // Pokračovat v nastavení studia
-                        const deckTitle = document.getElementById('deck-title');
-                        if (deckTitle) {
-                            deckTitle.textContent = deck.name;
-                        }
-                        
-                        // Příprava kartiček
-                        const randomOrderToggle = document.getElementById('randomOrderToggle');
-                        if (randomOrderToggle) {
-                            setupStudySession(deck.cards, randomOrderToggle.checked);
-                        } else {
-                            setupStudySession(deck.cards, false);
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Chyba při načítání šablony studia:', err);
-                        
-                        // Nouzové obnovení DOM struktury
-                        studySection.innerHTML = `
-                            <div class="deck-info">
-                                <h2 id="deck-title">${deck.name}</h2>
-                                <div class="progress-container">
-                                    <div id="progress-bar" class="progress-bar"></div>
-                                </div>
-                                <span id="progress-text">0/${deck.cards.length}</span>
-                                <div class="settings-container">
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="randomOrderToggle">
-                                        <span class="toggle-slider"></span>
-                                        <span class="toggle-label">Náhodné pořadí</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="flashcard-container">
-                                <div id="flashcard" class="flashcard" tabindex="0">
-                                    <div id="card-front" class="card-side card-front"></div>
-                                    <div id="card-back" class="card-side card-back hidden"></div>
-                                </div>
-                            </div>
-                            <div class="controls">
-                                <button id="flipBtn" class="control-btn">Otočit</button>
-                                <div class="rating-btns hidden" id="rating-btns">
-                                    <button data-rating="1" class="rating-btn">Znovu</button>
-                                    <button data-rating="3" class="rating-btn">Těžké</button>
-                                    <button data-rating="4" class="rating-btn">Dobré</button>
-                                    <button data-rating="5" class="rating-btn">Snadné</button>
-                                </div>
-                            </div>
-                            <div class="study-actions">
-                                <button id="endSessionBtn" class="secondary-btn">Ukončit studium</button>
-                                <button id="restartSessionBtn" class="secondary-btn">Začít znovu</button>
-                            </div>
-                        `;
-                        
-                        // Příprava kartiček
-                        setupStudySession(deck.cards, false);
-                    });
+                // Vytvořit strukturu pro studium přímo (bez načítání šablony)
+                createStudyInterface(studySection, deck);
+                
+                // Nastavit název balíčku
+                const deckTitle = document.getElementById('deck-title');
+                if (deckTitle) {
+                    deckTitle.textContent = deck.name;
+                }
+                
+                // Příprava kartiček
+                const randomOrderToggle = document.getElementById('randomOrderToggle');
+                setupStudySession(deck.cards, randomOrderToggle ? randomOrderToggle.checked : false);
             })
             .catch(error => {
                 console.error('Chyba při načítání balíčku:', error);
                 
-                if (studySection) {
-                    studySection.innerHTML = `
-                        <div class="error-message">
-                            <p>Nepodařilo se načíst balíček. ${error.message}</p>
+                studySection.innerHTML = `
+                    <div class="error-message">
+                        <p>Nepodařilo se načíst balíček. ${error.message}</p>
+                        <div class="actions-container">
                             <button onclick="window.location.reload()" class="primary-btn">Zkusit znovu</button>
+                            <button id="goHomeBtn" class="secondary-btn">Zpět na úvod</button>
                         </div>
-                    `;
-                }
+                    </div>
+                `;
+                
+                document.getElementById('goHomeBtn')?.addEventListener('click', () => {
+                    showSection(homeSection);
+                    homeBtn.classList.add('active');
+                });
             });
+    }
+
+    // Funkce pro vytvoření rozhraní pro studium
+    function createStudyInterface(container, deck) {
+        container.innerHTML = `
+            <div class="deck-info">
+                <h2 id="deck-title">${deck.name}</h2>
+                <div class="progress-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+                <span id="progress-text">0/${deck.cards.length}</span>
+                <div class="settings-container">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="randomOrderToggle">
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Náhodné pořadí</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flashcard-container">
+                <div id="flashcard" class="flashcard" tabindex="0" aria-label="Klikněte nebo stiskněte Enter pro otočení kartičky">
+                    <div id="card-front" class="card-side card-front"></div>
+                    <div id="card-back" class="card-side card-back hidden"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="flipBtn" class="control-btn">Otočit</button>
+                <div class="rating-btns hidden" id="rating-btns">
+                    <button data-rating="1" class="rating-btn">Znovu</button>
+                    <button data-rating="3" class="rating-btn">Těžké</button>
+                    <button data-rating="4" class="rating-btn">Dobré</button>
+                    <button data-rating="5" class="rating-btn">Snadné</button>
+                </div>
+            </div>
+
+            <div class="study-actions">
+                <button id="endSessionBtn" class="secondary-btn">Ukončit studium</button>
+                <button id="restartSessionBtn" class="secondary-btn">Začít znovu</button>
+            </div>
+        `;
     }
 
     // Nastavení studia
@@ -327,15 +315,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const cardFront = document.getElementById('card-front');
         const cardBack = document.getElementById('card-back');
         const flashcard = document.getElementById('flashcard');
-        const flipBtn = document.getElementById('flipBtn');
-        const progressBar = document.getElementById('progress-bar');
-        const progressText = document.getElementById('progress-text');
-        const ratingBtns = document.getElementById('rating-btns');
-        const randomOrderToggle = document.getElementById('randomOrderToggle');
+        const flipBtn = document.getElementById('flipBtn');!Array.isArray(cards) || cards.length === 0) {
+        const progressBar = document.getElementById('progress-bar');platné kartičky předané do setupStudySession:', cards);
+        const progressText = document.getElementById('progress-text'); platné kartičky.');
+        const ratingBtns = document.getElementById('rating-btns');       return;
+        const randomOrderToggle = document.getElementById('randomOrderToggle');    }
         
         // Nastavení počátečního stavu
-        updateProgress(0, totalCards);
-        showCard(currentCards[0]);
+        updateProgress(0, totalCards);    if (randomOrder) {
+        showCard(currentCards[0]);kartiček
         
         // Resetovat tlačítka hodnocení
         ratingBtns.classList.add('hidden');
@@ -344,107 +332,107 @@ document.addEventListener('DOMContentLoaded', function() {
         randomOrderToggle.addEventListener('change', () => {
             setupStudySession(cards, randomOrderToggle.checked);
         });
-        
-        // Event listener pro otočení karty
-        flashcard.addEventListener('click', flipCard);
-        flipBtn.addEventListener('click', flipCard);
-        
-        // Event listener pro klávesnici (Enter pro otočení karty)
-        flashcard.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                flipCard();
-            }
+            const cardBack = document.getElementById('card-back');
+        // Event listener pro otočení karty.getElementById('flashcard');
+        flashcard.addEventListener('click', flipCard);etElementById('flipBtn');
+        flipBtn.addEventListener('click', flipCard);cument.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+        // Event listener pro klávesnici (Enter pro otočení karty).getElementById('rating-btns');
+        flashcard.addEventListener('keydown', (e) => {ent.getElementById('randomOrderToggle');
+            if (e.key === 'Enter') {    
+                flipCard();enty nalezeny
+            }ipBtn || !progressBar || 
         });
-        
-        // Funkce pro otočení karty
+             console.error('Chybí některé potřebné elementy pro studium');
+        // Funkce pro otočení karty        alert('Chyba: Nepodařilo se inicializovat rozhraní pro studium.');
         function flipCard() {
             if (cardFront.classList.contains('hidden')) {
                 // Otočit zpět na přední stranu
-                cardFront.classList.remove('hidden');
+                cardFront.classList.remove('hidden');    // Nastavení počátečního stavu
                 cardBack.classList.add('hidden');
                 ratingBtns.classList.add('hidden');
                 flipBtn.textContent = 'Otočit';
-            } else {
-                // Otočit na zadní stranu
-                cardFront.classList.add('hidden');
-                cardBack.classList.remove('hidden');
-                ratingBtns.classList.remove('hidden');
-                flipBtn.textContent = 'Zpět';
-            }
-        }
+            } else {ačítka hodnocení
+                // Otočit na zadní stranuatingBtns.classList.add('hidden');
+                cardFront.classList.add('hidden'); 
+                cardBack.classList.remove('hidden');    // Event listener pro přepínač náhodného pořadí
+                ratingBtns.classList.remove('hidden');{
+                flipBtn.textContent = 'Zpět';ggle.checked = randomOrder;
+            }e', () => {
+        }ndomOrderToggle.checked);
         
         // Event listenery pro tlačítka hodnocení
         const ratingButtons = document.querySelectorAll('.rating-btn');
         ratingButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const rating = parseInt(button.getAttribute('data-rating'));
+            button.addEventListener('click', () => {d.addEventListener('click', flipCard);
+                const rating = parseInt(button.getAttribute('data-rating'));ck', flipCard);
                 
-                // Přejít na další kartu
-                currentIndex++;
+                // Přejít na další kartupro otočení karty)
+                currentIndex++;=> {
                 if (currentIndex >= totalCards) {
-                    // Konec studia
-                    alert('Gratuluji! Dokončili jste studium tohoto balíčku.');
-                    showSection(homeSection);
+                    // Konec studia       flipCard();
+                    alert('Gratuluji! Dokončili jste studium tohoto balíčku.');       }
+                    showSection(homeSection);    });
                     homeBtn.classList.add('active');
                     return;
                 }
-                
+                dden')) {
                 // Aktualizovat progress
-                updateProgress(currentIndex, totalCards);
-                
-                // Zobrazit další kartu
-                showCard(currentCards[currentIndex]);
+                updateProgress(currentIndex, totalCards);    cardFront.classList.remove('hidden');
+                dd('hidden');
+                // Zobrazit další kartuclassList.add('hidden');
+                showCard(currentCards[currentIndex]);';
                 
                 // Resetovat na přední stranu
-                cardFront.classList.remove('hidden');
-                cardBack.classList.add('hidden');
-                ratingBtns.classList.add('hidden');
-                flipBtn.textContent = 'Otočit';
-            });
+                cardFront.classList.remove('hidden');hidden');
+                cardBack.classList.add('hidden');n');
+                ratingBtns.classList.add('hidden');tns.classList.remove('hidden');
+                flipBtn.textContent = 'Otočit';   flipBtn.textContent = 'Zpět';
+            });}
         });
         
-        // Tlačítka pro ukončení a restart studia
-        document.getElementById('endSessionBtn').addEventListener('click', () => {
+        // Tlačítka pro ukončení a restart studiavent listenery pro tlačítka hodnocení
+        document.getElementById('endSessionBtn').addEventListener('click', () => {ent.querySelectorAll('.rating-btn');
             showSection(homeSection);
-            homeBtn.classList.add('active');
-        });
+            homeBtn.classList.add('active');button.addEventListener('click', () => {
+        });utton.getAttribute('data-rating'));
         
         document.getElementById('restartSessionBtn').addEventListener('click', () => {
             setupStudySession(cards, randomOrderToggle.checked);
-        });
-    }
-
-    // Zobrazení karty
-    function showCard(card) {
+        });rds) {
+    }         // Konec studia
+             alert('Gratuluji! Dokončili jste studium tohoto balíčku.');
+    // Zobrazení karty                showSection(homeSection);
+    function showCard(card) {tive');
         if (!card) return;
         
         const cardFront = document.getElementById('card-front');
-        const cardBack = document.getElementById('card-back');
-        
+        const cardBack = document.getElementById('card-back');         // Aktualizovat progress
+                    updateProgress(currentIndex, totalCards);
         // Nastavit obsah karty
         cardFront.innerHTML = card.front;
-        cardBack.innerHTML = card.back;
-        
-        // Kontrola, zda karta obsahuje obrázky
-        const hasImage = cardFront.querySelector('img') || cardBack.querySelector('img');
-        const flashcard = document.getElementById('flashcard');
-        
-        if (hasImage) {
+        cardBack.innerHTML = card.back;         showCard(currentCards[currentIndex]);
+                       
+        // Kontrola, zda karta obsahuje obrázky                    // Resetovat na přední stranu
+        const hasImage = cardFront.querySelector('img') || cardBack.querySelector('img');rdFront.classList.remove('hidden');
+        const flashcard = document.getElementById('flashcard');classList.add('hidden');
+        Btns.classList.add('hidden');
+        if (hasImage) {            flipBtn.textContent = 'Otočit';
             flashcard.classList.add('has-image');
         } else {
-            flashcard.classList.remove('has-image');
-        }
-    }
-
-    // Aktualizace progress baru
+            flashcard.classList.remove('has-image');    
+        }nčení a restart studia
+    }essionBtn').addEventListener('click', () => {
+);
+    // Aktualizace progress baru        homeBtn.classList.add('active');
     function updateProgress(current, total) {
         const progressBar = document.getElementById('progress-bar');
-        const progressText = document.getElementById('progress-text');
-        
+        const progressText = document.getElementById('progress-text');ntListener('click', () => {
+                setupStudySession(cards, randomOrderToggle.checked);
         const percentage = (current / total) * 100;
         progressBar.style.width = `${percentage}%`;
-        progressText.textContent = `${current}/${total}`;
-    }
+        progressText.textContent = `${current}/${total}`;ole.error('Chyba při nastavování studia:', error);
+    }: ' + error.message);
 
     // Pomocná funkce pro míchání pole
     function shuffleArray(array) {
@@ -452,199 +440,220 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = newArray.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-        }
-        return newArray;
+        }const cardFront = document.getElementById('card-front');
+        return newArray;ard-back');
     }
 
-    // Funkce pro kontrolu dostupných textových balíčků
-    function checkTextDecks() {
+    // Funkce pro kontrolu dostupných textových balíčků   cardFront.innerHTML = card.front;
+    function checkTextDecks() {        cardBack.innerHTML = card.back;
         const textDecksContainer = document.getElementById('text-decks-container');
-        const noTextDecks = document.getElementById('no-text-decks');
-        const textLoading = document.getElementById('text-loading');
-        
+        const noTextDecks = document.getElementById('no-text-decks');ahuje obrázky
+        const textLoading = document.getElementById('text-loading');uerySelector('img') || cardBack.querySelector('img');
+        hcard');
         // Zobrazit načítání
         textDecksContainer.innerHTML = '';
-        noTextDecks.style.display = 'none';
+        noTextDecks.style.display = 'none';   flashcard.classList.add('has-image');
         textLoading.classList.remove('hidden');
-        
-        // Kontrola Vercel prostředí
+               flashcard.classList.remove('has-image');
+        // Kontrola Vercel prostředí        }
         const isVercel = window.location.hostname.includes('vercel.app');
         
         // Timeout pro dlouhé požadavky
         const timeout = setTimeout(() => {
             console.warn('Požadavek na textové balíčky trvá nezvykle dlouho...');
-        }, 5000);
+        }, 5000);const progressText = document.getElementById('progress-text');
         
-        // Vercel prostředí - přímé načtení statických balíčků
-        if (isVercel) {
-            console.log('Detekováno Vercel.app prostředí, přímé načtení balíčků');
+        // Vercel prostředí - přímé načtení statických balíčkůl) * 100;
+        if (isVercel) {tage}%`;
+            console.log('Detekováno Vercel.app prostředí, přímé načtení balíčků');${total}`;
             clearTimeout(timeout);
             textLoading.classList.add('hidden');
             autoLoadTextDecks();
-            return;
+            return;tion shuffleArray(array) {
         }
-
+i > 0; i--) {
         // Načíst textové balíčky ze serveru
-        fetch('/api/text-decks')
-            .then(response => {
+        fetch('/api/text-decks')rray[i], newArray[j]] = [newArray[j], newArray[i]];
+            .then(response => {}
                 clearTimeout(timeout);
                 if (!response.ok) {
                     throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
-                }
+                }ých textových balíčků
                 return response.json();
-            })
-            .then(data => {
-                textLoading.classList.add('hidden');
-                
+            }) = document.getElementById('text-decks-container');
+            .then(data => {tDecks = document.getElementById('no-text-decks');
+                textLoading.classList.add('hidden');onst textLoading = document.getElementById('text-loading');
+                        
                 if (!data || data.length === 0) {
-                    noTextDecks.style.display = 'block';
-                    // Automaticky spustíme načítání textových balíčků ze složky
-                    autoLoadTextDecks();
+                    noTextDecks.style.display = 'block';HTML = '';
+                    // Automaticky spustíme načítání textových balíčků ze složkyay = 'none';
+                    autoLoadTextDecks();hidden');
                     return;
                 }
-                
+                ercel = window.location.hostname.includes('vercel.app');
                 // Uložit data do mezipaměti
-                try {
-                    localStorage.setItem('cachedTextDecks', JSON.stringify(data));
-                } catch (e) {
-                    console.warn('Nelze uložit textové balíčky do mezipaměti:', e);
+                try {eout pro dlouhé požadavky
+                    localStorage.setItem('cachedTextDecks', JSON.stringify(data));Timeout(() => {
+                } catch (e) {ky trvá nezvykle dlouho...');
+                    console.warn('Nelze uložit textové balíčky do mezipaměti:', e);;
                 }
-                
+                alíčků
                 displayDecks(data, textDecksContainer);
-            })
-            .catch(error => {
-                // ...existing error handling code...
-            });
+            })el.app prostředí, přímé načtení balíčků');
+            .catch(error => {meout);
+                // ...existing error handling code...oading.classList.add('hidden');
+            });LoadTextDecks();
     }
 
     // Funkce pro automatické načtení textových balíčků
-    function autoLoadTextDecks() {
+    function autoLoadTextDecks() {íčky ze serveru
         const textLoading = document.getElementById('text-loading');
-        textLoading.classList.remove('hidden');
-        
+        textLoading.classList.remove('hidden');(response => {
+        clearTimeout(timeout);
         const isVercel = window.location.hostname.includes('vercel.app');
-        console.log(isVercel ? 'Načítání probíhá na Vercel.app' : 'Načítání probíhá lokálně');
+        console.log(isVercel ? 'Načítání probíhá na Vercel.app' : 'Načítání probíhá lokálně');      throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
         
         fetch('/api/load-text-decks', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
+            headers: {       .then(data => {
+                'Content-Type': 'application/json'                textLoading.classList.add('hidden');
             },
-            body: JSON.stringify({
+            body: JSON.stringify({length === 0) {
                 vercel: isVercel
-            })
-        })
+            })ítání textových balíčků ze složky
+        })            autoLoadTextDecks();
         .then(response => {
             if (!response.ok) {
-                throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
-            }
+                throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);        
+            }aměti
             return response.json();
-        })
+        })calStorage.setItem('cachedTextDecks', JSON.stringify(data));
         .then(data => {
-            textLoading.classList.add('hidden');
+            textLoading.classList.add('hidden');      console.warn('Nelze uložit textové balíčky do mezipaměti:', e);
             
             if (data.success) {
-                // Čekáme chvíli, aby bylo jasné, že se něco stalo
-                setTimeout(() => {
-                    let message = `Úspěšně načteno ${data.decksCount} textových balíčků`;
-                    
+                // Čekáme chvíli, aby bylo jasné, že se něco stalo  displayDecks(data, textDecksContainer);
+                setTimeout(() => {  })
+                    let message = `Úspěšně načteno ${data.decksCount} textových balíčků`; {
+                    error handling code...
                     // Přidat informaci o prostředí pro lepší diagnostiku
                     if (data.isServerless) {
                         message += ` (v serverless prostředí ${data.environment || 'Vercel'})`;
-                    }
-                    
-                    // Zobrazit toast místo alertu na Vercelu
-                    if (isVercel) {
+                    }kce pro automatické načtení textových balíčků
+                    xtDecks() {
+                    // Zobrazit toast místo alertu na VerceluyId('text-loading');
+                    if (isVercel) {Loading.classList.remove('hidden');
                         showToast(message, 'success');
-                    } else {
-                        alert(message);
+                    } else {.app');
+                        alert(message);čítání probíhá na Vercel.app' : 'Načítání probíhá lokálně');
                     }
-                    
+                    load-text-decks', {
                     // Redirect na hlavní stránku s balíčky pro Vercel
                     if (isVercel) {
                         showSection(homeSection);
                         homeBtn.classList.add('active');
-                        loadDecks();
+                        loadDecks();ON.stringify({
                     } else {
                         checkTextDecks(); // Znovu načíst a zobrazit balíčky pro lokální prostředí
                     }
                 }, 500);
             } else {
-                let errorMsg = 'Nepodařilo se načíst textové balíčky: ' + (data.error || 'Neznámá chyba');
+                let errorMsg = 'Nepodařilo se načíst textové balíčky: ' + (data.error || 'Neznámá chyba'); new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
                 if (data.isServerless) {
                     errorMsg += ' (v serverless prostředí)';
                 }
                 
                 if (isVercel) {
                     showToast(errorMsg, 'error');
-                } else {
+                } else {) {
                     alert(errorMsg);
-                }
-            }
+                }meout(() => {
+            }message = `Úspěšně načteno ${data.decksCount} textových balíčků`;
         })
         .catch(error => {
-            console.error('Chyba při načítání textových balíčků:', error);
-            textLoading.classList.add('hidden');
-            
-            let errorMessage = 'Nepodařilo se načíst textové balíčky. ';
-            
+            console.error('Chyba při načítání textových balíčků:', error);s) {
+            textLoading.classList.add('hidden'); ${data.environment || 'Vercel'})`;
+               }
+            let errorMessage = 'Nepodařilo se načíst textové balíčky. ';    
+             toast místo alertu na Vercelu
             if (window.location.hostname.includes('vercel.app')) {
-                errorMessage += 'Aplikace běží na Vercel.app, zkuste obnovit stránku.';
+                errorMessage += 'Aplikace běží na Vercel.app, zkuste obnovit stránku.';showToast(message, 'success');
                 showToast(errorMessage, 'error');
-                
-                // Přejít na hlavní stránku ve Vercel prostředí
-                showSection(homeSection);
-                homeBtn.classList.add('active');
+                       alert(message);
+                // Přejít na hlavní stránku ve Vercel prostředí       }
+                showSection(homeSection);          
+                homeBtn.classList.add('active');direct na hlavní stránku s balíčky pro Vercel
             } else {
-                errorMessage += 'Zkontrolujte, zda je server spuštěn a dostupný.';
-                alert(errorMessage);
+                errorMessage += 'Zkontrolujte, zda je server spuštěn a dostupný.';;
+                alert(errorMessage);            homeBtn.classList.add('active');
             }
-        });
-    }
+        });        } else {
+    }it balíčky pro lokální prostředí
     
     // Pomocná funkce pro zobrazení toast zprávy (pro Vercel prostředí)
-    function showToast(message, type = 'info') {
-        const toast = document.createElement('div');
+    function showToast(message, type = 'info') {se {
+        const toast = document.createElement('div');líčky: ' + (data.error || 'Neznámá chyba');
         toast.className = `toast ${type}-toast`;
-        toast.innerHTML = message;
+        toast.innerHTML = message;prostředí)';
         
         document.body.appendChild(toast);
         
-        // Zobrazení toastu
-        setTimeout(() => {
-            toast.classList.add('show-toast');
-        }, 100);
+        // Zobrazení toastu       showToast(errorMsg, 'error');
+        setTimeout(() => {     } else {
+            toast.classList.add('show-toast');               alert(errorMsg);
+        }, 100);            }
         
         // Automatické skrytí toastu po 5 sekundách
         setTimeout(() => {
-            toast.classList.remove('show-toast');
-            setTimeout(() => {
-                document.body.removeChild(toast);
-            }, 500);
-        }, 5000);
-    }
-
-    // Přidání funkcionality pro automatické načtení textových kartiček
+            toast.classList.remove('show-toast');xtových balíčků:', error);
+            setTimeout(() => {add('hidden');
+                document.body.removeChild(toast);    
+            }, 500);o se načíst textové balíčky. ';
+        }, 5000);    
+    }tion.hostname.includes('vercel.app')) {
+ge += 'Aplikace běží na Vercel.app, zkuste obnovit stránku.';
+    // Přidání funkcionality pro automatické načtení textových kartiček');
     const autoLoadTextBtn = document.getElementById('autoLoadTextBtn');
-    if (autoLoadTextBtn) {
+    if (autoLoadTextBtn) {        // Přejít na hlavní stránku ve Vercel prostředí
         autoLoadTextBtn.addEventListener('click', autoLoadTextDecks);
-    }
+    }assList.add('active');
 
-    // Odstranění nepotřebných UI prvků
+    // Odstranění nepotřebných UI prvků= 'Zkontrolujte, zda je server spuštěn a dostupný.';
     function removeUnwantedElements() {
         // Odstraní zbytečný text "Studovat Resetovat Smazat" pokud se objeví na stránce
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-                if (mutation.type === 'childList' && mutation.addedNodes.length) {
+                if (mutation.type === 'childList' && mutation.addedNodes.length) {    
                     mutation.addedNodes.forEach((node) => {
                         if (node.nodeType === Node.TEXT_NODE && 
-                            node.textContent.includes('Studovat Resetovat Smazat')) {
+                            node.textContent.includes('Studovat Resetovat Smazat')) {ment.createElement('div');
                             node.textContent = node.textContent.replace('Studovat Resetovat Smazat', '');
-                        }
-                        
-                        if (node.nodeType === Node.ELEMENT_NODE) {
+                        }   toast.innerHTML = message;
+                                
+                        if (node.nodeType === Node.ELEMENT_NODE) {);
                             const textNodes = [...node.childNodes].filter(n => 
                                 n.nodeType === Node.TEXT_NODE && 
+                                n.textContent.includes('Studovat Resetovat Smazat'));
+                            ;
+                            textNodes.forEach(textNode => {
+                                textNode.textContent = textNode.textContent.replace('Studovat Resetovat Smazat', '');
+                            });
+                        }
+                    });
+                } => {
+            });.body.removeChild(toast);
+        });
+        
+        // Sledovat změny v celém dokumentu
+        observer.observe(document.body, { 
+            childList: true,  pro automatické načtení textových kartiček
+            subtree: true adTextBtn');
+        });
+    }tListener('click', autoLoadTextDecks);
+
+    // Spustit odstranění nežádoucích prvků
+    removeUnwantedElements(); nepotřebných UI prvků
+});moveUnwantedElements() {
                                 n.textContent.includes('Studovat Resetovat Smazat'));
                             
                             textNodes.forEach(textNode => {
