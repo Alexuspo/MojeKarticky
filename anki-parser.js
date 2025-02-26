@@ -1,82 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-const { createHash } = require('crypto');
+const crypto = require('crypto');
 
 /**
- * Zpracuje Anki .apkg soubor a převede ho na formát použitelný v naší aplikaci
- * @param {string} filePath - Cesta k Anki souboru
- * @returns {Object} - Zpracovaný balíček
+ * Dummy funkce pro zpracování Anki souboru - ve verzi pro Vercel vždy vrací ukázkový balíček
  */
-async function parseAnkiFile(filePath) {
-    try {
-        // Kontrola, zda soubor existuje
-        if (!filePath || !fs.existsSync(filePath)) {
-            console.warn(`Soubor ${filePath} neexistuje, vracím testovací data`);
-            return createDummyDeck();
-        }
-        
-        // Pokus o zpracování Anki souboru
-        try {
-            // Vygenerovat unikátní ID pro balíček
-            const fileBuffer = fs.readFileSync(filePath);
-            const hash = createHash('md5').update(fileBuffer).digest('hex');
-            const id = hash.substring(0, 8);
-
-            // Zde by normálně byla logika pro zpracování .apkg souboru
-            // Protože nám modul anki-apkg-parser dělá problémy, vytvoříme zjednodušenou verzi
-            
-            const ankiData = {
-                name: path.basename(filePath, '.apkg'),
-                cards: extractCardsFromFile(fileBuffer) || []
-            };
-            
-            // Pokud jsme nemohli extrahovat karty, použijeme testovací data
-            if (ankiData.cards.length === 0) {
-                console.warn('Nepodařilo se extrahovat karty, používám testovací data');
-                return createDummyDeck();
-            }
-            
-            // Převést do formátu naší aplikace
-            const deck = {
-                id,
-                name: ankiData.name || `Balíček ${id}`,
-                cards: ankiData.cards.map((card, index) => ({
-                    id: createHash('md5').update(`${card.front}${card.back}${index}`).digest('hex').substring(0, 8),
-                    front: card.front,
-                    back: card.back,
-                    tags: card.tags || []
-                })),
-                created: new Date().toISOString(),
-                lastModified: new Date().toISOString()
-            };
-            
-            return deck;
-        } catch (parseError) {
-            console.error('Chyba při zpracování Anki souboru, používám testovací data:', parseError);
-            return createDummyDeck();
-        }
-    } catch (error) {
-        console.error('Neošetřená chyba při zpracování Anki souboru:', error);
-        return createDummyDeck();
-    }
-}
-
-/**
- * Pokusí se extrahovat karty z Anki souboru
- * Poznámka: Toto je velmi zjednodušené a nemusí fungovat se všemi Anki soubory
- * @param {Buffer} fileBuffer - Buffer se souborem
- * @returns {Array|null} - Pole karet nebo null při neúspěchu
- */
-function extractCardsFromFile(fileBuffer) {
-    try {
-        // Toto je jen zjednodušená implementace
-        // V reálném případě bychom potřebovali skutečně parsovat .apkg soubor (SQLite databáze)
-        // Protože to je složité a externí modul nefunguje, vracíme null
-        return null;
-    } catch (error) {
-        console.error('Chyba při extrakci karet:', error);
-        return null;
-    }
+async function parseAnkiFile() {
+    return createDummyDeck();
 }
 
 /**
