@@ -54,13 +54,56 @@ app.get('/api/decks', (req, res) => {
 // API pro získání konkrétního balíčku
 app.get('/api/decks/:id', (req, res) => {
     try {
-        const deck = decks.find(d => d.id === req.params.id);
-        if (!deck) {
-            return res.status(404).json({ error: 'Balíček nebyl nalezen' });
+        // Zajistit, že máme načtené balíčky
+        if (!decks || decks.length === 0) {
+            decks = getStaticDecks();
         }
+        
+        const deckId = req.params.id;
+        logInfo(`Hledám balíček s ID: ${deckId}`);
+        
+        // Najít balíček podle ID
+        const deck = decks.find(d => d.id === deckId);
+        
+        if (!deck) {
+            logWarning(`Balíček s ID ${deckId nebyl nalezen, zkouším alternativní metody`);
+            
+            // Zkusit najít podle názvu (pro případ, že ID se liší, ale název je stejný)
+            if (deckId.includes('literatura')) {
+                const literaturaDeck = createLiteraturaDeck();
+                logInfo(`Vracím alternativní balíček literatury: ${literaturaDeck.name}`);
+                return res.json(literaturaDeck);
+            } else if (deckId.includes('abstrakt')) {
+                const abstraktDeck = createAbstractArtDeck();
+                logInfo(`Vracím alternativní balíček abstraktního umění: ${abstraktDeck.name}`);
+                return res.json(abstraktDeck);
+            } else if (deckId.includes('histor')) {
+                const historyDeck = createHistoryDeck();
+                logInfo(`Vracím alternativní balíček historie: ${historyDeck.name}`);
+                return res.json(historyDeck);
+            }
+            
+            // Pokud všechno selže, vrátit chybu
+            logWarning(`Balíček nebyl nalezen ani přes alternativní metody`);
+            return res.status(404).json({ 
+                error: 'Balíček nebyl nalezen',
+                requestedId: deckId,
+                availableDecks: decks.map(d => ({ id: d.id, name: d.name }))
+            });
+        }
+        
+        logSuccess(`Balíček nalezen: ${deck.name}`);
         res.json(deck);
     } catch (error) {
         logError('Chyba při získávání balíčku:', error);
+        
+        // V případě chyby vrátit první dostupný balíček (záchranná metoda)
+        const backupDecks = getStaticDecks();
+        if (backupDecks && backupDecks.length > 0) {
+            logInfo(`Vracím záložní balíček: ${backupDecks[0].name}`);
+            return res.json(backupDecks[0]);
+        }
+        
         res.status(500).json({
             error: 'Nastala chyba při získávání balíčku',
             details: error.message

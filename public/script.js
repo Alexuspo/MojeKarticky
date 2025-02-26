@@ -191,29 +191,124 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Začátek studia
     function startStudySession(deckId) {
+        console.log(`Načítám balíček s ID: ${deckId} pro studium`);
+        
+        // Přidat indikátor načítání
+        const studySection = document.getElementById('study-section');
+        if (studySection) {
+            studySection.innerHTML = '<div class="loading-indicator"><div class="spinner"></div><p>Načítám balíček...</p></div>';
+        }
+
+        // Zobrazit sekci studia již během načítání
+        showSection(studySection);
+        studyBtn.classList.add('active');
+        
         fetch(`/api/decks/${deckId}`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(deck => {
-                if (!deck || !deck.cards || deck.cards.length === 0) {
-                    alert('Balíček neobsahuje žádné kartičky.');
+                console.log(`Balíček načten: ${deck.name}, kartiček: ${deck.cards ? deck.cards.length : 0}`);
+                
+                if (!deck.cards || deck.cards.length === 0) {
+                    console.error('Balíček neobsahuje žádné kartičky', deck);
+                    
+                    // Obnovit původní obsah sekce studia
+                    fetch('/study-section-template.html')
+                        .then(response => response.text())
+                        .then(template => {
+                            studySection.innerHTML = template;
+                            alert('Balíček neobsahuje žádné kartičky.');
+                            showSection(homeSection);
+                            homeBtn.classList.add('active');
+                        })
+                        .catch(err => {
+                            studySection.innerHTML = '<div class="error-message">Chyba při načítání šablony studia</div>';
+                            setTimeout(() => {
+                                location.reload();
+                            }, 2000);
+                        });
                     return;
                 }
                 
-                // Nastavení studia
-                const deckTitle = document.getElementById('deck-title');
-                deckTitle.textContent = deck.name;
-                
-                // Příprava kartiček
-                const randomOrderToggle = document.getElementById('randomOrderToggle');
-                setupStudySession(deck.cards, randomOrderToggle.checked);
-                
-                // Přepnutí na sekci studia
-                showSection(studySection);
-                studyBtn.classList.add('active');
+                // Obnovit původní obsah sekce studia
+                fetch('/study-section-template.html')
+                    .then(response => response.text())
+                    .then(template => {
+                        studySection.innerHTML = template;
+                        
+                        // Pokračovat v nastavení studia
+                        const deckTitle = document.getElementById('deck-title');
+                        if (deckTitle) {
+                            deckTitle.textContent = deck.name;
+                        }
+                        
+                        // Příprava kartiček
+                        const randomOrderToggle = document.getElementById('randomOrderToggle');
+                        if (randomOrderToggle) {
+                            setupStudySession(deck.cards, randomOrderToggle.checked);
+                        } else {
+                            setupStudySession(deck.cards, false);
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Chyba při načítání šablony studia:', err);
+                        
+                        // Nouzové obnovení DOM struktury
+                        studySection.innerHTML = `
+                            <div class="deck-info">
+                                <h2 id="deck-title">${deck.name}</h2>
+                                <div class="progress-container">
+                                    <div id="progress-bar" class="progress-bar"></div>
+                                </div>
+                                <span id="progress-text">0/${deck.cards.length}</span>
+                                <div class="settings-container">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="randomOrderToggle">
+                                        <span class="toggle-slider"></span>
+                                        <span class="toggle-label">Náhodné pořadí</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="flashcard-container">
+                                <div id="flashcard" class="flashcard" tabindex="0">
+                                    <div id="card-front" class="card-side card-front"></div>
+                                    <div id="card-back" class="card-side card-back hidden"></div>
+                                </div>
+                            </div>
+                            <div class="controls">
+                                <button id="flipBtn" class="control-btn">Otočit</button>
+                                <div class="rating-btns hidden" id="rating-btns">
+                                    <button data-rating="1" class="rating-btn">Znovu</button>
+                                    <button data-rating="3" class="rating-btn">Těžké</button>
+                                    <button data-rating="4" class="rating-btn">Dobré</button>
+                                    <button data-rating="5" class="rating-btn">Snadné</button>
+                                </div>
+                            </div>
+                            <div class="study-actions">
+                                <button id="endSessionBtn" class="secondary-btn">Ukončit studium</button>
+                                <button id="restartSessionBtn" class="secondary-btn">Začít znovu</button>
+                            </div>
+                        `;
+                        
+                        // Příprava kartiček
+                        setupStudySession(deck.cards, false);
+                    });
             })
             .catch(error => {
                 console.error('Chyba při načítání balíčku:', error);
-                alert('Nepodařilo se načíst balíček. Zkontrolujte připojení k serveru.');
+                
+                if (studySection) {
+                    studySection.innerHTML = `
+                        <div class="error-message">
+                            <p>Nepodařilo se načíst balíček. ${error.message}</p>
+                            <button onclick="window.location.reload()" class="primary-btn">Zkusit znovu</button>
+                        </div>
+                    `;
+                }
             });
     }
 
