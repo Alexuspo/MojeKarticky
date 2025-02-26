@@ -11,9 +11,17 @@ function loadAllTextDecks(folderPath) {
     try {
         console.log(`Hledám textové soubory ve složce: ${folderPath}`);
         
+        // Detekce serverless prostředí (Vercel, Netlify, atd.)
+        const isServerless = process.env.VERCEL || process.env.NETLIFY || !fs.existsSync(folderPath);
+        
+        if (isServerless) {
+            console.log('Běžím v serverless prostředí (Vercel.app), používám předpřipravené balíčky');
+            return getStaticDecks();
+        }
+        
         if (!fs.existsSync(folderPath)) {
             console.warn(`Složka ${folderPath} neexistuje`);
-            return [];
+            return getStaticDecks(); // Vrátit statické balíčky jako zálohu
         }
         
         // Získání seznamu souborů
@@ -25,7 +33,7 @@ function loadAllTextDecks(folderPath) {
         
         if (textFiles.length === 0) {
             console.warn('Nebyly nalezeny žádné textové soubory s kartičkami');
-            return [];
+            return getStaticDecks(); // Vrátit statické balíčky jako zálohu
         }
         
         // Parsování každého textového souboru
@@ -46,10 +54,16 @@ function loadAllTextDecks(folderPath) {
         }
         
         console.log(`Celkem zpracováno ${decks.length} balíčků z textových souborů`);
+        
+        // Pokud nebyl načten žádný balíček, použít statické balíčky
+        if (decks.length === 0) {
+            return getStaticDecks();
+        }
+        
         return decks;
     } catch (error) {
         console.error('Chyba při načítání textových balíčků:', error);
-        return [];
+        return getStaticDecks(); // Vrátit statické balíčky v případě jakékoli chyby
     }
 }
 
@@ -318,7 +332,7 @@ function createHardcodedDeck() {
     
     // Přidat ID ke každé kartě
     const cardsWithId = cards.map((card, index) => ({
-        id: `hardcoded${index}`,
+        id: `literatura${index}`,
         front: card.front,
         back: card.back,
         tags: ['literatura']
@@ -335,10 +349,106 @@ function createHardcodedDeck() {
     };
 }
 
+/**
+ * Vytvoří hardcoded balíček pro abstraktní umění
+ * @returns {Object} - Balíček abstraktní umění
+ */
+function createAbstractArtDeck() {
+    const cards = [
+        { front: "Abstraktní umění se začalo rozvíjet zejména", back: "na počátku 20. století" },
+        { front: "Hlavním představitelem abstraktního expresionismu byl", back: "Jackson Pollock" },
+        { front: "Významným průkopníkem geometrické abstrakce byl", back: "Piet Mondrian" },
+        { front: "Pojem 'abstraktní umění' poprvé použil", back: "Wassily Kandinsky" },
+        { front: "Bauhaus byla škola, která značně ovlivnila", back: "abstraktní design a architekturu" },
+        { front: "Suprematismus je charakterizován", back: "používáním základních geometrických tvarů a omezenou barevností" },
+        { front: "Který český umělec se proslavil abstrakcí?", back: "František Kupka" },
+        { front: "De Stijl bylo", back: "nizozemské umělecké hnutí založené v roce 1917" }
+    ];
+    
+    // Přidat ID ke každé kartě
+    const cardsWithId = cards.map((card, index) => ({
+        id: `abstraktni${index}`,
+        front: card.front,
+        back: card.back,
+        tags: ['umeni', 'abstrakt']
+    }));
+    
+    return {
+        id: "abstraktni_umeni_hardcoded",
+        name: "Abstraktní umění",
+        cards: cardsWithId,
+        created: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+        source: 'hardcoded',
+        format: 'plain'
+    };
+}
+
+/**
+ * Vytvoří hardcoded balíček pro historii
+ * @returns {Object} - Balíček historie
+ */
+function createHistoryDeck() {
+    const cards = [
+        { front: "Kdy byla bitva na Bílé hoře?", back: "8. listopadu 1620" },
+        { front: "Kdo byl prvním československým prezidentem?", back: "Tomáš Garrigue Masaryk" },
+        { front: "Ve kterém roce vznikla první Československá republika?", back: "1918" },
+        { front: "Datum sametové revoluce", back: "17. listopadu 1989" },
+        { front: "Jak dlouho trvala třicetiletá válka?", back: "1618-1648" },
+        { front: "Kdy byl založen první koncentrační tábor na českém území?", back: "1941 - Terezín" },
+        { front: "Kdo byl atentátníkem na následníka trůnu Františka Ferdinanda d'Este?", back: "Gavrilo Princip" },
+        { front: "Ve kterém roce vstoupila ČR do EU?", back: "2004" }
+    ];
+    
+    // Přidat ID ke každé kartě
+    const cardsWithId = cards.map((card, index) => ({
+        id: `historie${index}`,
+        front: card.front,
+        back: card.back,
+        tags: ['historie']
+    }));
+    
+    return {
+        id: "historie_hardcoded",
+        name: "Historie ČR",
+        cards: cardsWithId,
+        created: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+        source: 'hardcoded',
+        format: 'plain'
+    };
+}
+
+/**
+ * Získá statické balíčky kartiček pro serverless prostředí (jako Vercel.app)
+ * @returns {Array} - Pole balíčků kartiček
+ */
+function getStaticDecks() {
+    console.log('Používání statických balíčků kartiček pro serverless prostředí');
+    
+    // Pole balíčků
+    const staticDecks = [];
+    
+    // Přidat literaturu
+    staticDecks.push(createHardcodedDeck());
+    
+    // Přidat další předpřipravený balíček
+    staticDecks.push(createAbstractArtDeck());
+    
+    // Přidat balíček historie
+    staticDecks.push(createHistoryDeck());
+    
+    console.log(`Vytvořeno ${staticDecks.length} statických balíčků kartiček`);
+    return staticDecks;
+}
+
 module.exports = {
     parseTextFile,
     loadAllTextDecks,
     getLiteraturaFromTextFile,
     createHardcodedDeck,
-    processCardContentWithMedia
+    createAbstractArtDeck,
+    createHistoryDeck,
+    processCardContentWithMedia,
+    getStaticDecks
 };

@@ -391,8 +391,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (!data || data.length === 0) {
                     noTextDecks.style.display = 'block';
-                    // Automaticky spustíme načítání textových balíčků ze složky
-                    autoLoadTextDecks();
+                    
+                    // Detekce Vercel prostředí
+                    if (window.location.hostname.includes('vercel.app')) {
+                        console.log('Detekováno Vercel.app prostředí, automaticky načítám statické balíčky');
+                        autoLoadTextDecks();
+                    } else {
+                        // Automaticky spustíme načítání textových balíčků ze složky
+                        autoLoadTextDecks();
+                    }
                     return;
                 }
                 
@@ -436,13 +443,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
-                // Zobrazit chybovou zprávu s podrobnostmi
+                // Zobrazit chybovou zprávu s podrobnostmi a nabídkou řešení
                 noTextDecks.style.display = 'block';
                 
-                // Detailnější chybová zpráva
+                // Detailnější chybová zpráva s přizpůsobením pro Vercel
                 let errorMessage = 'Nepodařilo se načíst textové balíčky. ';
+                let isVercel = window.location.hostname.includes('vercel.app');
                 
-                if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+                if (isVercel) {
+                    errorMessage += 'Aplikace běží na Vercel.app, což může způsobovat problémy s načítáním souborů. ';
+                    errorMessage += '<button id="loadStaticDecksBtn" class="primary-btn">Načíst předdefinované balíčky</button>';
+                } else if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
                     errorMessage += 'Pravděpodobně není spuštěn server nebo je nedostupný. ';
                     errorMessage += '<button id="autoLoadTextDecksBtn" class="primary-btn">Načíst z lokální složky</button>';
                 } else if (error.message.includes('HTTP chyba')) {
@@ -453,8 +464,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 noTextDecks.innerHTML = `<p class="error-message">${errorMessage}</p>`;
                 
-                // Přidat funkčnost tlačítku "Načíst z lokální složky"
+                // Přidat funkčnost tlačítkům
                 document.getElementById('autoLoadTextDecksBtn')?.addEventListener('click', autoLoadTextDecks);
+                document.getElementById('loadStaticDecksBtn')?.addEventListener('click', autoLoadTextDecks);
             });
     }
 
@@ -481,11 +493,22 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 // Čekáme chvíli, aby bylo jasné, že se něco stalo
                 setTimeout(() => {
-                    alert(`Úspěšně načteno ${data.decksCount} textových balíčků.`);
+                    let message = `Úspěšně načteno ${data.decksCount} textových balíčků`;
+                    
+                    // Přidat informaci o prostředí pro lepší diagnostiku
+                    if (data.isServerless) {
+                        message += ` (v serverless prostředí ${data.environment || 'Vercel'})`;
+                    }
+                    
+                    alert(message);
                     checkTextDecks(); // Znovu načíst a zobrazit balíčky
                 }, 500);
             } else {
-                alert('Nepodařilo se načíst textové balíčky: ' + (data.error || 'Neznámá chyba'));
+                let errorMsg = 'Nepodařilo se načíst textové balíčky: ' + (data.error || 'Neznámá chyba');
+                if (data.isServerless) {
+                    errorMsg += ' (v serverless prostředí)';
+                }
+                alert(errorMsg);
             }
         })
         .catch(error => {
@@ -494,7 +517,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             let errorMessage = 'Nepodařilo se načíst textové balíčky. ';
             
-            if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+            if (window.location.hostname.includes('vercel.app')) {
+                errorMessage += 'Aplikace běží na Vercel.app, načtěte stránku znovu nebo kontaktujte správce.';
+            } else if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
                 errorMessage += 'Zkontrolujte, zda je server spuštěn a dostupný.';
             } else {
                 errorMessage += error.message;
