@@ -11,14 +11,16 @@
     "diagnose": "node server-check.js",
     "restart": "npm run setup && npm start",
     "clean": "rimraf node_modules package-lock.json && npm install",
-    "vercel-build": "echo 'Build proběhl úspěšně'"
+    "vercel-build": "echo 'Build proběhl úspěšně'",
+    "download-images": "node image-downloader.js"
   },
   "engines": {
     "node": ">=14.0.0"
   },
   "dependencies": {
     "express": "^4.17.1",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "cheerio": "^1.0.0-rc.12"
   },
   "devDependencies": {
     "nodemon": "^2.0.12",

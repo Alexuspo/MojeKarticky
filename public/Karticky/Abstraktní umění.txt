@@ -1,0 +1,44 @@
+#separator:tab
+#html:true
+#deck column:1
+#tags column:4
+Abstraktní umění	"<img alt=""Improvisation No. 5 - Wassily Kandinsky jako tisk anebo olejomalba"" src=""Improvisation-No-5.jpg"">"	Wassily Kandinsky Impresse3	
+Abstraktní umění	"<img alt=""Composition VIII - Wassily Kandinsky jako tisk anebo olejomalba"" src=""Komposition-VIII.jpg"">"	Wassily Kandinsky Impresse IV	
+Abstraktní umění	"<img alt=""Barevná studie. Čtverce se soustřednými kruhy, 1913."" src=""Wassily_Kandinsky_-_Color_Study_Squares_with_Concentric_Circles_1913_-_(MeisterDrucke-1185849).jpg"">"	Soustředné Kruhy	
+Abstraktní umění	"<img alt=""Hera - Francis Picabia - WikiArt.org"" src=""hera.jpg!Large.jpg"">"	Francis Picabia - Hera	
+Abstraktní umění	"<img alt=""Young Girl, 1912 - Francis Picabia - WikiArt.org"" src=""young-girl.jpg!Large.jpg"">"	Francis Picabia - Mladá dívka	
+Abstraktní umění	"<img alt=""File:Francis Picabia, 1913, Udnie (Young American Girl, The Dance), oil on  canvas, 290 x 300 cm, Musée National d'Art Moderne, Centre Georges  Pompidou, Paris..jpg - Wikimedia Commons"" src=""1023px-Francis_Picabia,_1913,_Udnie_(Young_American_Girl,_The_Dance),_oil_on_canvas,_290_x_300_cm,_Musée_National_.jpg"">"	Francis Picabia -&nbsp; Mladá americká dívka	
+Abstraktní umění	"<img alt=""Sonata of the sun. Scherzo, 1907, 57×60 cm by Mikalojus Konstantinas  Čiurlionis: History, Analysis &amp; Facts | Arthive"" src=""259037@2x.jpeg"">"	Mikolojus konstantinas čiulionis - Sonáta slunce	
+Abstraktní umění	"<img alt=""MIKALOJUS KONSTANTINAS CIURLIONIS. Sonata VI. Andante. (Sonata of the  Stars). - Album alb3342850"" src=""album_alb3342850.jpg"">"	Mikolojus konstinas čiulionis - Sonáta č.6	
+Abstraktní umění	"<img alt=""P] Sparks III (1906)"" src=""products-Ciurlionis-Kibirkstys-3.jpg"">"	Kibirkštys	
+Abstraktní umění	"<img alt=""Soubor:Robert Delaunay - Rythme, Joie de vivre.jpg – Wikipedie"" src=""Robert_Delaunay_-_Rythme,_Joie_de_vivre.jpg"">"	Robert Delauney - Rytmus	
+Abstraktní umění	"<img alt=""Champs de Mars: The Red Tower - Wikipedia"" src=""Delaunay_ChampDeMars.jpg"">"	Robert Delauney - Champ de mars	
+Abstraktní umění	"<img alt=""Simultánní okna na město"" src=""Robert_Delaunay_-_Simultaneous_Windows_on_the_City_-_(MeisterDrucke-1416483).jpg"">"	Robert Delauney - Simultánní okna na město	
+Abstraktní umění	"<img alt=""Soubor:Robert delaunay, caroselli di maiali, 1922, 01.JPG – Wikipedie"" src=""800px-Robert_delaunay,_caroselli_di_maiali,_1922,_01.JPG"">"	Robert Delauney - cirkující formy	
+Abstraktní umění	"<img alt=""Endless Rhythm', Robert Delaunay, 1934 | Tate"" src=""T01233_10.jpg"">"	Robert Delauney - Endless rythm	
+Abstraktní umění	"<img alt=""Černý čtverec – Wikipedie"" src=""800px-Чёрный_супрематический_квадрат._1915._ГТГ.png"">"	Kazimir Malevič - Černý čtverec	
+Abstraktní umění	"<img alt=""Mystic Suprematism černý kříž na červeném oválu"" src=""Kazimir Malevich -  Mystic Suprematism black cross on red ovaln - (MeisterDrucke-349401).jpg"">"	Kazimir Malevič - Černý kříž	
+Abstraktní umění	"<img alt=""Suprematistická kompozice: Bílá na bílém, 1918"" src=""Kazimir_Severinovich_Malevich_-_Suprematist_Composition_White_on_White_1918_-_(MeisterDrucke-635264).jpg"">"	Kazimir Malevič - Bílí čtverec na bílém pozadí	
+Abstraktní umění	"<img alt=""Složitá předtucha. Torzo ve žluté košili (Complicated Premonition. Torso in  a Yellow Shirt). Obraz Kazimira Severinoviče Maleviče (Malevich, Malevic)  (1878-1935), olej na plátně"" src=""Kazimir_Severinovich_Malevich_-_Premonition_compliquee_Torse_dans_une_chemise_jaune_(Complicated_Premonition_Tor_-_.jpg"">"	Kazimir Malevič - Složitá předtucha	
+Abstraktní umění	"<img alt=""TAJEMSTVÍ ABSTRAKTNÍ MALBY I. - ppt stáhnout"" src=""Kazimir+Malevič+Hlava+venkovské+dívky.jpg"">"	Kazimir Malevič - Tajemství abstraktní mapy	
+Abstraktní umění	"<img alt=""Červený strom"" src=""Piet Mondrian - Red Tree  - (MeisterDrucke-32633).jpg""><img alt=""Šedý strom, 1911"" src=""Piet Mondrian - The Gray Tree 1911  - (MeisterDrucke-557467).jpg"">"	Piet Mondrian - Stromy	
+Abstraktní umění	"<img alt=""Soubor:Mondrian Zelfportret.jpg – Wikipedie"" src=""Mondrian_Zelfportret.jpg"">"	Piet Mondrian - Autoportrét	
+Abstraktní umění	"<img alt=""Piet Mondrian: Kompozice v červené, žluté, modré a černé | Abstraktní |  Kubismus | Obrazy, reprodukce obrazů, fotografie"" src=""8136.webp"">"	Piet Mondrian - Kompozice	
+Abstraktní umění	"<img alt=""Piet Mondrian: Kompozice č. 8 | Abstraktní | Kubismus | Obrazy, reprodukce  obrazů, fotografie"" src=""8139.webp"">"	Piet Mondrian - Kompozice 8	
+Abstraktní umění	"<img alt=""Abstraktní Piet Mondrian Styl Obrazu Vyrobené Softwaru Stock ilustrace  ©fermagafe #4972604"" src=""depositphotos_4972604-stock-illustration-abstract-piet-mondrian-style-image.jpg"">"	Piet Mondrian - Kompozice s červenou a modrou abstrakce 3D	
+Abstraktní umění	"<img alt=""František Kupka - Vlastní podobizna | Národní galerie Praha - sbírky"" src=""CZE_NG.O_3809.jpeg"">"	František Kupka -&nbsp; Autoportrét	
+Abstraktní umění	"<img alt=""Knihomol - František Kupka (1871 – 1957) | 1. Art Consulting"" src=""201.jpg"">"	František Kupka -&nbsp; Knihomol	
+Abstraktní umění	"<img alt=""České Umění on X: &quot;František Kupka - Autoportrét s manželkou - 1908  https://t.co/ErUfhOO0cg&quot; / X"" src=""DioG418X0AE9neG.jpglarge"">"	František Kupka -&nbsp; Autoportrét se ženou	
+Abstraktní umění	"<img alt=""František Kupka - Amorfa. Dvoubarevná fuga | Národní galerie Praha - sbírky"" src=""CZE_NG.O_5942.jpeg"">"	František Kupka -&nbsp; Amorfa	
+Abstraktní umění	"<img alt=""František Kupka: Amorfa. Teplá chromatika - Aktuálně.cz"" src=""18d7e045d5bc3f038fc74d8f3c192485_resize=768,772_.jpg"">"	františek kupka Teplá chromatika	
+Abstraktní umění	"<img alt=""Ludmila Padrtová (1931 - 2016) - DOBRÁ NÁLADA - Lot 171 | VEČERNÍ AUKCE  2020 | Výstavy a aukce | Arthouse Hejtmánek"" src=""0014925-1-_1600x0_0.jpg"">"	Ludmila Padrtová - Dobrá nálada	
+Abstraktní umění	"<img alt=""Ludmila Padrtová - Muzeum umění Olomouc"" src=""0141_1178.jpg"">"	Ludmila Padrtová - bez názvu	
+Abstraktní umění	"<img alt=""Vladimír Boudník, Aktivní grafika (Horizontály a vertikály, Stopy materiálu),  1959-1966 -"" src=""aHR0cHM6Ly9zMy5ldS1jZW50cmFsLTEuYW1hem9uYXdzLmNvbS91cGxvYWRzLm1hbmdvd2ViLm9yZy9hcnRtYXAvcHJvZC91cGxvYWRzLzIwMTkvMDQ.jpg""><img alt=""Vladimír Boudník – Stopy materiálů (Stopy nástrojů) | Web umenia"" src=""600.jpg"">"	Vladimír boudník - Stopy materiálu	
+Abstraktní umění	"<img alt=""Kdo je (byl) Vladimír Boudník? - Babylon"" src=""3-Boudník.strukt.-grafika.jpg"">"	Vladimír boudník - Babylon	
+Abstraktní umění	"<img alt=""Jan Vyleťal / Geometrická kompozice - detail aukce « Aukce « Aukční Galerie  Platýz"" src=""1753-jan-vyletal-geometricka-kompozice-1753-58.jpg"">"	Jan Vyleťal geometrická kompozice	
+Abstraktní umění	"<img alt=""Jan Vyleťal (1940 - 2013) - NEJVYŠŠÍ INTELIGENCE VE VESMÍRU - Lot 170 |  VEČERNÍ AUKCE 2020 | Výstavy a aukce | Arthouse Hejtmánek"" src=""0015019_1600x0_0.jpg"">"	Jan Vyleťal Najvyšší inteligence ve vesmíru	
+Abstraktní umění	"<img alt=""Sýkorovy letenské dlaždičky jsou výřezem z nekonečna - iDNES.cz"" src=""EFL2968a7_foto_letna_02.jpg"">"	Zdeněk Sýkora - Mozaik obklady větracích komínů	
+Abstraktní umění	"<img alt=""Top 10 Sýkora | Artplus.cz"" src=""Sykora04-Linie100.jpg"">"	Zdeněk Sýkora - linie č100	
+Abstraktní umění	"<img alt=""Velký bílý kabát"" src=""71f6c0543f72dbcb0ba83965fc1dd4f25b2368e24cedf.jpg"">"	věra janoušková bílí kabát	
+Abstraktní umění	"<img alt=""Vernisáž Věra Janoušková &amp; Vladimír Janoušek: Kristus a kyvadlo - Martin  Fryč"" src=""images.jpg"">"	věra janoušková Kristus a kyvadlo	
+Abstraktní umění	"<img alt=""Věra Janoušková, Figura, polovina sedmdesátých let 20. století • Museum  Kampa"" src=""Janoušková-e1567001671746.jpg"">"	věra janoušková figura	
