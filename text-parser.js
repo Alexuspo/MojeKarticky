@@ -27,6 +27,7 @@ function parseTextFile(filePath) {
         // Základní informace o balíčku
         let deckName = 'Literatura-Test-karticky';
         let separator = '\t'; // Výchozí oddělovač je tabulátor
+        let isHtml = false; // Výchozí hodnota pro HTML podporu
         
         // Pole pro kartičky
         const cards = [];
@@ -56,6 +57,11 @@ function parseTextFile(filePath) {
                             separator = value;
                         }
                     }
+                    
+                    // Povolení HTML obsahu
+                    if (key === 'html') {
+                        isHtml = value.toLowerCase() === 'true';
+                    }
                 }
                 
                 continue;
@@ -71,8 +77,18 @@ function parseTextFile(filePath) {
             
             // Vytvoření karty
             // Index 2 je přední strana, index 3 je zadní strana
-            const front = parts[2] ? parts[2].trim() : '';
-            const back = parts[3] ? parts[3].trim() : '';
+            let front = parts[2] ? parts[2].trim() : '';
+            let back = parts[3] ? parts[3].trim() : '';
+            
+            // Zpracování HTML obsahu
+            if (isHtml) {
+                // Zpracovat odkazy na obrázky a nahradit je HTML značkami img
+                const mediaPattern = /<img[^>]*src=["']([^"']+)["'][^>]*>/g;
+                
+                // Zpracování předních a zadních stran
+                front = processCardContentWithMedia(front, mediaPattern);
+                back = processCardContentWithMedia(back, mediaPattern);
+            }
             
             // Přeskočit neplatné karty
             if (!front || !back) {
@@ -115,12 +131,35 @@ function parseTextFile(filePath) {
             created: new Date().toISOString(),
             lastModified: new Date().toISOString(),
             source: 'textfile',
-            format: 'html'
+            format: isHtml ? 'html' : 'plain'
         };
     } catch (error) {
         console.error('Chyba při parsování textového souboru:', error);
         return null;
     }
+}
+
+/**
+ * Zpracování obsahu kartiček obsahujících média
+ * @param {string} content - Obsah kartičky
+ * @param {RegExp} mediaPattern - Regulární výraz pro detekci médií
+ * @returns {string} - Zpracovaný obsah
+ */
+function processCardContentWithMedia(content, mediaPattern) {
+    if (!content) return '';
+    
+    // Nahradit odkazy na lokální obrázky (pokud existují)
+    content = content.replace(mediaPattern, (match, src) => {
+        // Pokud je odkaz relativní, upravit cestu
+        if (!src.startsWith('http') && !src.startsWith('data:')) {
+            // Pokud je cesta k obrázku relativní, přidáme cestu k veřejným obrázkům
+            const imageSrc = `/images/${path.basename(src)}`;
+            return `<img src="${imageSrc}" alt="Obrázek na kartičce">`;
+        }
+        return match;
+    });
+    
+    return content;
 }
 
 /**

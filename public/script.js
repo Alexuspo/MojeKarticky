@@ -25,12 +25,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const endSessionBtn = document.getElementById('endSessionBtn');
     const restartSessionBtn = document.getElementById('restartSessionBtn');
 
+    // Přidání přepínače pro náhodné pořadí
+    const randomOrderToggle = document.getElementById('randomOrderToggle');
+
     // Stav aplikace
     let currentDeck = null;
     let currentCardIndex = 0;
     let isCardFlipped = false;
     let isLoading = false;
-    
+    let originalDeckOrder = []; // Pro uložení původního pořadí karet
+
     // Offline ukázkový balíček přímo v klientu pro případ výpadku serveru
     const fallbackDeck = {
         id: 'offline001',
@@ -58,6 +62,33 @@ document.addEventListener('DOMContentLoaded', () => {
         created: new Date().toISOString(),
         lastModified: new Date().toISOString()
     };
+
+    // Načtení uživatelského nastavení z localStorage
+    const loadUserSettings = () => {
+        try {
+            const settings = JSON.parse(localStorage.getItem('userSettings')) || {};
+            if (settings.randomOrder !== undefined && randomOrderToggle) {
+                randomOrderToggle.checked = settings.randomOrder;
+            }
+        } catch (e) {
+            console.warn('Nepodařilo se načíst uživatelská nastavení:', e);
+        }
+    };
+
+    // Uložení uživatelského nastavení do localStorage
+    const saveUserSettings = () => {
+        try {
+            const settings = {
+                randomOrder: randomOrderToggle ? randomOrderToggle.checked : false
+            };
+            localStorage.setItem('userSettings', JSON.stringify(settings));
+        } catch (e) {
+            console.warn('Nepodařilo se uložit uživatelská nastavení:', e);
+        }
+    };
+
+    // Inicializace nastavení
+    loadUserSettings();
 
     // Navigační akce
     homeBtn.addEventListener('click', () => showSection(homeSection));
@@ -176,6 +207,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 isLoading = false;
                 loadTextDeckBtn.disabled = false;
                 loadTextDeckBtn.textContent = 'Načíst z textu';
+            }
+        });
+    }
+
+    // Event listener pro přepínač náhodného pořadí
+    if (randomOrderToggle) {
+        randomOrderToggle.addEventListener('change', () => {
+            saveUserSettings();
+            if (currentDeck && currentDeck.cards) {
+                // Restartovat studium s novým nastavením
+                currentCardIndex = 0;
+                isCardFlipped = false;
+                startStudySession();
             }
         });
     }
@@ -351,9 +395,30 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        // Uložit původní pořadí karet
+        originalDeckOrder = [...currentDeck.cards];
+        
+        // Pokud je zapnuto náhodné pořadí, zamíchat karty
+        if (randomOrderToggle && randomOrderToggle.checked) {
+            currentDeck.cards = shuffleArray([...originalDeckOrder]);
+            showMessage('Kartičky byly náhodně zamíchány', 'info');
+        } else {
+            // Obnovit původní pořadí
+            currentDeck.cards = [...originalDeckOrder];
+        }
+        
         deckTitle.textContent = currentDeck.name;
         updateProgressBar();
         showCard(currentCardIndex);
+    }
+
+    // Funkce pro zamíchání pole (Fisher-Yates shuffle)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
     }
 
     function showCard(index) {
@@ -375,8 +440,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Zajistit, že obsahy kartiček jsou definované
-        cardFront.innerHTML = card.front || 'Prázdná přední strana';
-        cardBack.innerHTML = card.back || 'Prázdná zadní strana';
+        cardFront.innerHTML = processCardContent(card.front) || 'Prázdná přední strana';
+        cardBack.innerHTML = processCardContent(card.back) || 'Prázdná zadní strana';
+        
+        // Přidat třídu has-image, pokud je v kartičce IMG tag
+        const hasImage = (card.front && card.front.includes('<img')) || 
+                         (card.back && card.back.includes('<img'));
+        
+        if (hasImage) {
+            flashcard.classList.add('has-image');
+        } else {
+            flashcard.classList.remove('has-image');
+        }
+        
+        // Nastavit onload handler pro obrázky
+        setupImageLoaders();
         
         cardFront.classList.remove('hidden');
         cardBack.classList.add('hidden');
@@ -384,6 +462,54 @@ document.addEventListener('DOMContentLoaded', () => {
         
         flipBtn.style.display = 'block';
         ratingBtns.classList.add('hidden');
+    }
+
+    // Zpracování obsahu kartiček vč. obrázků
+    function processCardContent(content) {
+        if (!content) return '';
+        
+        // Pokud obsah už obsahuje HTML tagy, předpokládáme, že je formátovaný
+        if (content.includes('<') && content.includes('>')) {
+            // Ujistit se, že obrázky mají alt atribut pro přístupnost
+            return content.replace(/<img([^>]*)>/g, function(match, attributes) {
+                if (!attributes.includes('alt=')) {
+                    return `<img${attributes} alt="Obrázek na kartičce">`;
+                }
+                return match;
+            });
+        }
+        
+        // Jednoduchý text - nahradit nové řádky pomocí <br>
+        return content.replace(/\n/g, '<br>');
+    }
+
+    // Nastavení správného načítání obrázků
+    function setupImageLoaders() {
+        const images = document.querySelectorAll('.card-side img');
+        
+        images.forEach(img => {
+            // Pokud obrázek není načten, přidat placeholder
+            if (!img.complete) {
+                const loadingPlaceholder = document.createElement('div');
+                loadingPlaceholder.className = 'image-loading';
+                img.parentNode.insertBefore(loadingPlaceholder, img.nextSibling);
+                
+                img.onload = () => {
+                    // Po načtení obrázku odstranit placeholder
+                    if (loadingPlaceholder.parentNode) {
+                        loadingPlaceholder.parentNode.removeChild(loadingPlaceholder);
+                    }
+                };
+                
+                img.onerror = () => {
+                    // Při chybě načítání nahradit obrázek chybovou zprávou
+                    if (loadingPlaceholder.parentNode) {
+                        loadingPlaceholder.parentNode.removeChild(loadingPlaceholder);
+                    }
+                    img.outerHTML = '<div class="image-error">Nepodařilo se načíst obrázek</div>';
+                };
+            }
+        });
     }
 
     function updateProgressBar() {
@@ -607,4 +733,51 @@ document.addEventListener('DOMContentLoaded', () => {
             // Detek
         }
     }
+
+    // Obsluha klávesových zkratek
+    document.addEventListener('keydown', (event) => {
+        // Pouze pokud jsme v sekci studia
+        if (!studySection.classList.contains('active-section')) return;
+        
+        if (event.code === 'Space' || event.code === 'Enter') {
+            // Mezerník nebo Enter pro otočení karty
+            event.preventDefault();
+            flipCard();
+        } else if (event.code === 'ArrowRight' || event.code === 'KeyN') {
+            // Šipka doprava nebo N pro další kartu (pouze když je karta otočená)
+            if (isCardFlipped && currentCardIndex < currentDeck.cards.length - 1) {
+                event.preventDefault();
+                currentCardIndex++;
+                showCard(currentCardIndex);
+                updateProgressBar();
+            }
+        } else if (event.code === 'ArrowLeft' || event.code === 'KeyP') {
+            // Šipka doleva nebo P pro předchozí kartu
+            if (currentCardIndex > 0) {
+                event.preventDefault();
+                currentCardIndex--;
+                showCard(currentCardIndex);
+                updateProgressBar();
+                isCardFlipped = false;
+            }
+        } else if (event.code === 'Digit1' && isCardFlipped) {
+            // 1 pro hodnocení "Znovu"
+            document.querySelector('.rating-btn[data-rating="1"]')?.click();
+        } else if (event.code === 'Digit2' && isCardFlipped) {
+            // 2 pro hodnocení "Těžké"
+            document.querySelector('.rating-btn[data-rating="3"]')?.click();
+        } else if (event.code === 'Digit3' && isCardFlipped) {
+            // 3 pro hodnocení "Dobré"
+            document.querySelector('.rating-btn[data-rating="4"]')?.click();
+        } else if (event.code === 'Digit4' && isCardFlipped) {
+            // 4 pro hodnocení "Snadné"
+            document.querySelector('.rating-btn[data-rating="5"]')?.click();
+        } else if (event.code === 'KeyR') {
+            // R pro přepnutí náhodného pořadí
+            if (randomOrderToggle) {
+                randomOrderToggle.checked = !randomOrderToggle.checked;
+                randomOrderToggle.dispatchEvent(new Event('change'));
+            }
+        }
+    });
 });
