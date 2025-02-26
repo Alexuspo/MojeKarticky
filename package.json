@@ -9,6 +9,7 @@
     "check": "node check-files.js",
     "setup": "node setup.js",
     "diagnose": "node server-check.js",
+    "fix": "node fix-decks.js",
     "restart": "npm run setup && npm start",
     "clean": "rimraf node_modules package-lock.json && npm install",
     "vercel-build": "echo 'Build proběhl úspěšně'",

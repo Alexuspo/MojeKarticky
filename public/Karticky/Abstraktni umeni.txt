@@ -1,0 +1,13 @@
+#separator:tab
+#html:true
+#deck column:1
+#tags column:4
+Abstraktní umění	<img alt="Improvisation No. 5 - Wassily Kandinsky jako tisk anebo olejomalba" src="images/Improvisation-No-5.jpg">	Wassily Kandinsky Impresse3	umění
+Abstraktní umění	<img alt="Composition VIII - Wassily Kandinsky jako tisk anebo olejomalba" src="images/Komposition-VIII.jpg">	Wassily Kandinsky Impresse IV	umění
+Abstraktní umění	<img alt="Barevná studie. Čtverce se soustřednými kruhy, 1913." src="images/Wassily_Kandinsky_-_Color_Study_Squares_with_Concentric_Circles_1913_-_(MeisterDrucke-1185849).jpg">	Soustředné Kruhy	umění
+Abstraktní umění	<img alt="Hera - Francis Picabia - WikiArt.org" src="images/hera.jpg">	Francis Picabia - Hera	umění
+Abstraktní umění	<img alt="Young Girl, 1912 - Francis Picabia - WikiArt.org" src="images/young-girl.jpg">	Francis Picabia - Mladá dívka	umění
+Abstraktní umění	<img alt="Francis Picabia, 1913, Udnie (Young American Girl, The Dance)" src="images/1023px-Francis_Picabia,_1913,_Udnie_(Young_American_Girl,_The_Dance),_oil_on_canvas,_290_x_300_cm,_Musée_National_.jpg">	Francis Picabia - Mladá americká dívka	umění
+Abstraktní umění	<img alt="Sonata of the sun. Scherzo, 1907, 57×60 cm by Mikalojus Konstantinas Čiurlionis" src="images/259037@2x.jpeg">	Mikolojus konstantinas čiulionis - Sonáta slunce	umění
+Abstraktní umění	<img alt="MIKALOJUS KONSTANTINAS CIURLIONIS. Sonata VI. Andante." src="images/album_alb3342850.jpg">	Mikolojus konstinas čiulionis - Sonáta č.6	umění
+Abstraktní umění	<img alt="P] Sparks III (1
