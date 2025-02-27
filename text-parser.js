@@ -414,37 +414,45 @@ function createAbstractArtDeck() {
 }
 
 /**
- * Vytvoří hardcoded balíček pro historii
- * @returns {Object} - Balíček historie
+ * Vytvoří hardcoded balíček pro abstraktní umění s obrázky
+ * @returns {Object} - Balíček abstraktní umění s obrázky
  */
-function createHistoryDeck() {
+function createAbstractArtImagesDeck() {
     const cards = [
-        { front: "Kdy byla bitva na Bílé hoře?", back: "8. listopadu 1620" },
-        { front: "Kdo byl prvním československým prezidentem?", back: "Tomáš Garrigue Masaryk" },
-        { front: "Ve kterém roce vznikla první Československá republika?", back: "1918" },
-        { front: "Datum sametové revoluce", back: "17. listopadu 1989" },
-        { front: "Jak dlouho trvala třicetiletá válka?", back: "1618-1648" },
-        { front: "Kdy byl založen první koncentrační tábor na českém území?", back: "1941 - Terezín" },
-        { front: "Kdo byl atentátníkem na následníka trůnu Františka Ferdinanda d'Este?", back: "Gavrilo Princip" },
-        { front: "Ve kterém roce vstoupila ČR do EU?", back: "2004" }
+        {
+            front: '<img alt="Barevná studie" src="images/kandinsky.jpg" style="max-height: 300px;">',
+            back: 'Vasilij Kandinskij - Soustředné Kruhy (1913). Jeden z nejznámějších obrazů tohoto průkopníka abstraktního umění.'
+        },
+        {
+            front: '<img alt="Černý čtverec" src="images/malevich.jpg" style="max-height: 300px;">',
+            back: 'Kazimir Malevič - Černý čtverec na bílém pozadí (1915). Ikona suprematismu a klíčové dílo abstraktního umění 20. století.'
+        },
+        {
+            front: '<img alt="Amorfa" src="images/kupka.jpg" style="max-height: 300px;">',
+            back: 'František Kupka - Amorfa: Dvoubarevná fuga (1912). Jedno z prvních plně abstraktních děl v historii malířství.'
+        },
+        {
+            front: '<img alt="Kompozice" src="images/mondrian.jpg" style="max-height: 300px;">',
+            back: 'Piet Mondrian - Kompozice v červené, žluté, modré a černé. Typické dílo neoplasticismu používající pouze základní barvy a pravoúhlé tvary.'
+        }
     ];
     
     // Přidat ID ke každé kartě
     const cardsWithId = cards.map((card, index) => ({
-        id: `historie${index}`,
+        id: `abstrakt_obrazky_${index}`,
         front: card.front,
         back: card.back,
-        tags: ['historie']
+        tags: ['umeni', 'abstraktni', 'obrazky']
     }));
     
     return {
-        id: "historie_hardcoded",
-        name: "Historie ČR",
+        id: "abstraktni_umeni_obrazky_hardcoded",
+        name: "Abstraktní umění - obrazová galerie",
         cards: cardsWithId,
         created: new Date().toISOString(),
         lastModified: new Date().toISOString(),
         source: 'hardcoded',
-        format: 'plain'
+        format: 'html'
     };
 }
 
@@ -461,11 +469,11 @@ function getStaticDecks() {
     // Přidat literaturu
     staticDecks.push(createHardcodedDeck());
     
-    // Přidat další předpřipravený balíček
+    // Přidat abstraktní umění
     staticDecks.push(createAbstractArtDeck());
     
-    // Přidat balíček historie
-    staticDecks.push(createHistoryDeck());
+    // Přidat abstraktní umění s obrázky
+    staticDecks.push(createAbstractArtImagesDeck());
     
     console.log(`Vytvořeno ${staticDecks.length} statických balíčků kartiček`);
     return staticDecks;
@@ -477,7 +485,7 @@ module.exports = {
     getLiteraturaFromTextFile,
     createHardcodedDeck,
     createAbstractArtDeck,
-    createHistoryDeck,
+    createAbstractArtImagesDeck, // Přidat tuto funkci do exportů
     processCardContentWithMedia,
     getStaticDecks
 };

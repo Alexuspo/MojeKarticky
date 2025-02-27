@@ -1,0 +1,17 @@
+Návod pro obrázky k balíčku Abstraktního umění:
+
+1. Umístěte tyto 4 obrázky do složky /c:/Zaloha skauti/Skauti/MojeKarticky/public/images/
+
+2. Pojmenujte je přesně takto:
+   - kandinsky.jpg - Barevná studie se soustřednými kruhy od Vasilije Kandinského
+   - malevich.jpg - Černý čtverec od Kazimira Maleviče
+   - kupka.jpg - Amorfa: Dvoubarevná fuga od Františka Kupky
+   - mondrian.jpg - Kompozice v červené, žluté, modré a černé od Pieta Mondriana
+
+3. Můžete tyto obrázky stáhnout z internetu a přejmenovat je na přesně tyto názvy.
+   Vyhledejte je na Google a uložte pod uvedenými názvy.
+
+4. Pro nejjednodušší řešení přejmenujte jakékoli stávající obrázky v images složce 
+   na tyto názvy souborů.
+
+5. Po umístění obrázků spusťte aplikaci a načtěte balíček "Abstraktní umění - galerie".
