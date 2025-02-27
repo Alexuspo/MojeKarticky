@@ -231,14 +231,26 @@ function createLiteraturaDeck() {
 // Vytvoření balíčku Abstraktní umění
 function createAbstractArtDeck() {
     const cards = [
-        { front: "Abstraktní umění se začalo rozvíjet zejména", back: "na počátku 20. století" },
-        { front: "Hlavním představitelem abstraktního expresionismu byl", back: "Jackson Pollock" },
-        { front: "Významným průkopníkem geometrické abstrakce byl", back: "Piet Mondrian" },
-        { front: "Pojem 'abstraktní umění' poprvé použil", back: "Wassily Kandinsky" },
-        { front: "Bauhaus byla škola, která značně ovlivnila", back: "abstraktní design a architekturu" },
-        { front: "Suprematismus je charakterizován", back: "používáním základních geometrických tvarů a omezenou barevností" },
-        { front: "Který český umělec se proslavil abstrakcí?", back: "František Kupka" },
-        { front: "De Stijl bylo", back: "nizozemské umělecké hnutí založené v roce 1917" }
+        { front: "Kdy byl vytvořen první abstraktní obraz?", back: "V roce 1910." },
+        { front: "Kdo je považován za tvůrce prvního abstraktního akvarelu?", back: "Vasilij Kandinskij (vytvořil ho údajně náhodou, když otočil svůj obraz)." },
+        { front: "Jaké jsou klíčové znaky abstraktního umění?", back: "Nefigurativnost, soustředění na výtvarné prostředky (linie, tvar, barva, plocha), vyjádření emocí čistě výtvarnými prvky." },
+        { front: "Z jakých uměleckých směrů se vyvinulo abstraktní umění?", back: "Ze symbolismu, fauvismu, expresionismu a zejména kubismu, který rozkladem forem vytvořil předpoklady pro opuštění předmětnosti." },
+        { front: "Kdo byl František Kupka a jaká byla jeho role v abstraktním umění?", back: "Český malíř, grafik a ilustrátor, jeden z průkopníků abstraktního umění, který v roce 1912 vystavoval abstraktní obrazy na Podzimním salónu v Paříži." },
+        { front: "Co je suprematismus a kdo je jeho zakladatelem?", back: "Ruský směr založený Kazimimem Malevičem, používající jednoduché geometrické tvary a omezený počet barev. Název odkazuje k latínskému \"supremus\" (nejvyšší)." },
+        { front: "Jaké je nejznámější dílo Kazimira Maleviče?", back: "Černý čtverec na bílém pozadí (1915)." },
+        { front: "Co je neoplasticismus (De Stijl) a jaké jsou jeho hlavní znaky?", back: "Holandský směr usilující o absolutní čistotu výrazu. Používá jen vodorovné a svislé čáry, pravé úhly a základní barvy (červená, modrá, žlutá) plus černá, bílá a šedá." },
+        { front: "Která díla patří mezi klíčová v tvorbě Františka Kupky?", back: "Amorfa - Dvoubarevná fuga, Amorfa - Teplá chromatika, Klávesy piana, Vertikální plány, Tryskání II." },
+        { front: "Co je orfismus a jak souvisí s hudbou?", back: "Směr odvozený od kubismu, zdůrazňující barevnost a rytmus, inspirovaný hudbou. Název odkazuje k mytickému hudebníkovi Orfeovi." },
+        { front: "Kteří umělci byli hlavními představiteli orfismu?", back: "Robert Delaunay, František Kupka a Francis Picabia." },
+        { front: "Ve kterém období se rozvíjela druhá vlna abstrakce a kde?", back: "1945-1960, zejména v USA a západní Evropě." },
+        { front: "Který český umělec byl průkopníkem počítačového umění v rámci abstrakce?", back: "Zdeněk Sýkora (od 60. let využíval počítač pro tvorbu struktur a linií)." },
+        { front: "Jaký byl význam abstraktního umění pro vývoj umění 20. století?", back: "Osvobození umění od povinnosti napodobovat realitu, důraz na vlastní výrazové prostředky, propojení s ostatními druhy umění, vliv na architekturu a design." },
+        { front: "Jaká byla inspirace pro Pieta Mondriana při tvorbě jeho pozdějších děl?", back: "Jazzová hudba (série Boogie Woogie)." },
+        { front: "Co je rayonismus (lučismus) a kdo byli jeho hlavní představitelé?", back: "Ruský směr zaměřený na zachycení světelných paprsků a pohyb mimo čas a prostor. Hlavní představitelé byli Michail Larionov a Natalie Gončarovová." },
+        { front: "Jakými fázemi prošla tvorba Kazimira Maleviče během jeho umělecké kariéry?", back: "Od nabismu přes futurismus a kubismus k suprematismu, později architektura a nakonec návrat k figurální malbě s uniformními postavami bez tváří." },
+        { front: "Co spojovalo Mikalojuse Konstantinase Čiurlionise s abstraktním uměním?", back: "Byl synestetik - propojoval hudbu a výtvarné umění, jeho dílo předjímalo abstraktní umění díky důrazu na barvu, rytmus a stylizovanou formu." },
+        { front: "Která díla patří mezi nejvýznamnější práce Pieta Mondriana?", back: "Kompozice se žlutou, modrou a červenou, Broadway Boogie Woogie, série Stromů (ukazující vývoj od realismu k abstrakci)." },
+        { front: "Jak se abstraktní umění inspirovalo hudbou?", back: "Abstraktní povaha zvuků a jejich rytmické uspořádání poskytly model pro nereprezentativní umění, kde rytmus, harmonie a kompozice fungují podobně jako v hudbě." }
     ];
     
     // Přidat ID ke každé kartě
@@ -251,7 +263,7 @@ function createAbstractArtDeck() {
     
     return {
         id: "abstraktni_umeni_hardcoded",
-        name: "Abstraktní umění",
+        name: "Abstraktní umění - 20 kartiček",
         cards: cardsWithId,
         created: new Date().toISOString(),
         lastModified: new Date().toISOString(),

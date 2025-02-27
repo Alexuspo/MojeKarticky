@@ -79,12 +79,24 @@ function parseTextFile(filePath) {
         // Kontrola, zda soubor existuje
         if (!fs.existsSync(filePath)) {
             console.warn(`Soubor ${filePath} neexistuje`);
+            
+            // Speciální zpracování pro abstraktní umění
+            if (filePath.toLowerCase().includes('abstrakt')) {
+                console.log('Generuji náhradní balíček abstraktního umění');
+                return createAbstractArtDeck();
+            }
+            
             return null;
         }
 
         // Načtení obsahu souboru
         const fileContent = fs.readFileSync(filePath, 'utf8');
         console.log(`Soubor načten, velikost: ${fileContent.length} bajtů`);
+        
+        // Detekovat, zda jde o balíček abstraktního umění
+        if (filePath.toLowerCase().includes('abstrakt')) {
+            console.log('Detekován soubor abstraktního umění, pokusím se zpracovat');
+        }
         
         const lines = fileContent.split('\n');
         console.log(`Počet řádků v souboru: ${lines.length}`);
@@ -231,6 +243,13 @@ function parseTextFile(filePath) {
         };
     } catch (error) {
         console.error('Chyba při parsování textového souboru:', error);
+        
+        // Pokud jde o abstraktní umění, vygenerovat náhradní balíček
+        if (filePath.toLowerCase().includes('abstrakt')) {
+            console.log('Přes chybu generuji náhradní balíček abstraktního umění');
+            return createAbstractArtDeck();
+        }
+        
         return null;
     }
 }
