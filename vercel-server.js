@@ -77,6 +77,10 @@ app.get('/api/decks/:id', (req, res) => {
                 const abstraktDeck = createAbstractArtDeck();
                 logInfo(`Vracím alternativní balíček abstraktního umění: ${abstraktDeck.name}`);
                 return res.json(abstraktDeck);
+            } else if (deckId.includes('histor')) {
+                const historyDeck = createHistoryDeck();
+                logInfo(`Vracím alternativní balíček historie: ${historyDeck.name}`);
+                return res.json(historyDeck);
             }
             
             // Pokud všechno selže, vrátit první balíček
@@ -175,7 +179,7 @@ function getStaticDecks() {
     const staticDecks = [];
     staticDecks.push(createLiteraturaDeck());
     staticDecks.push(createAbstractArtDeck());
-    staticDecks.push(createAbstractArtImagesDeck()); // Přidáno: balíček s obrázky
+    staticDecks.push(createHistoryDeck());
     
     return staticDecks;
 }
@@ -268,43 +272,35 @@ function createAbstractArtDeck() {
     };
 }
 
-// Vytvoření balíčku Abstraktní umění s obrázky
-function createAbstractArtImagesDeck() {
+// Vytvoření balíčku Historie
+function createHistoryDeck() {
     const cards = [
-        {
-            front: '<img alt="Barevná studie. Čtverce se soustřednými kruhy, 1913." src="images/Wassily_Kandinsky_-_Color_Study_Squares_with_Concentric_Circles_1913_-_(MeisterDrucke-1185849).jpg" style="max-height: 300px;">',
-            back: 'Vasilij Kandinskij - Soustředné Kruhy (1913). Jeden z nejznámějších obrazů tohoto průkopníka abstraktního umění.'
-        },
-        {
-            front: '<img alt="Černý čtverec" src="images/800px-Чёрный_супрематический_квадрат._1915._ГТГ.png" style="max-height: 300px;">',
-            back: 'Kazimir Malevič - Černý čtverec na bílém pozadí (1915). Ikona suprematismu a klíčové dílo abstraktního umění 20. století.'
-        },
-        {
-            front: '<img alt="František Kupka - Amorfa. Dvoubarevná fuga" src="images/CZE_NG.O_5942.jpeg" style="max-height: 300px;">',
-            back: 'František Kupka - Amorfa: Dvoubarevná fuga (1912). Jedno z prvních plně abstraktních děl v historii malířství.'
-        },
-        {
-            front: '<img alt="Piet Mondrian: Kompozice v červené, žluté, modré a černé" src="images/8136.webp" style="max-height: 300px;">',
-            back: 'Piet Mondrian - Kompozice v červené, žluté, modré a černé. Typické dílo neoplasticismu používající pouze základní barvy a pravoúhlé tvary.'
-        }
+        { front: "Kdy byla bitva na Bílé hoře?", back: "8. listopadu 1620" },
+        { front: "Kdo byl prvním československým prezidentem?", back: "Tomáš Garrigue Masaryk" },
+        { front: "Ve kterém roce vznikla první Československá republika?", back: "1918" },
+        { front: "Datum sametové revoluce", back: "17. listopadu 1989" },
+        { front: "Jak dlouho trvala třicetiletá válka?", back: "1618-1648" },
+        { front: "Kdy byl založen první koncentrační tábor na českém území?", back: "1941 - Terezín" },
+        { front: "Kdo byl atentátníkem na následníka trůnu Františka Ferdinanda d'Este?", back: "Gavrilo Princip" },
+        { front: "Ve kterém roce vstoupila ČR do EU?", back: "2004" }
     ];
     
     // Přidat ID ke každé kartě
     const cardsWithId = cards.map((card, index) => ({
-        id: `abstrakt_obrazky_${index}`,
+        id: `historie${index}`,
         front: card.front,
         back: card.back,
-        tags: ['umeni', 'abstraktni', 'obrazky']
+        tags: ['historie']
     }));
     
     return {
-        id: "abstraktni_umeni_obrazky_hardcoded",
-        name: "Abstraktní umění - obrazová galerie",
+        id: "historie_hardcoded",
+        name: "Historie ČR",
         cards: cardsWithId,
         created: new Date().toISOString(),
         lastModified: new Date().toISOString(),
         source: 'hardcoded',
-        format: 'html'
+        format: 'plain'
     };
 }
 
