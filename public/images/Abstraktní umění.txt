@@ -1,0 +1,31 @@
+#separator:tab
+#html:true
+"<img alt=""Barevná studie. Čtverce se soustřednými kruhy, 1913."" src=""Wassily_Kandinsky_-_Color_Study_Squares_with_Concentric_Circles_1913_-_(MeisterDrucke-1185849).jpg"">"	Soustředné Kruhy
+"<img alt=""Hera - Francis Picabia - WikiArt.org"" src=""hera.jpg!Large.jpg"">"	Francis Picabia - Hera
+"<img alt=""File:Francis Picabia, 1913, Udnie (Young American Girl, The Dance), oil on  canvas, 290 x 300 cm, Musée National d'Art Moderne, Centre Georges  Pompidou, Paris..jpg - Wikimedia Commons"" src=""1023px-Francis_Picabia,_1913,_Udnie_(Young_American_Girl,_The_Dance),_oil_on_canvas,_290_x_300_cm,_Musée_National_.jpg"">"	Francis Picabia -&nbsp; Mladá americká dívka
+"<img alt=""MIKALOJUS KONSTANTINAS CIURLIONIS. Sonata VI. Andante. (Sonata of the  Stars). - Album alb3342850"" src=""album_alb3342850.jpg"">"	Mikolojus konstinas čiulionis - Sonáta č.6
+"<img alt=""P] Sparks III (1906)"" src=""products-Ciurlionis-Kibirkstys-3.jpg"">"	Kibirkštys
+"<img alt=""Champs de Mars: The Red Tower - Wikipedia"" src=""Delaunay_ChampDeMars.jpg"">"	Robert Delauney - Champ de mars
+"<img alt=""Simultánní okna na město"" src=""Robert_Delaunay_-_Simultaneous_Windows_on_the_City_-_(MeisterDrucke-1416483).jpg"">"	Robert Delauney - Simultánní okna na město
+"<img alt=""Endless Rhythm', Robert Delaunay, 1934 | Tate"" src=""T01233_10.jpg"">"	Robert Delauney - Endless rythm
+"<img alt=""Černý čtverec – Wikipedie"" src=""800px-Чёрный_супрематический_квадрат._1915._ГТГ.png"">"	Kazimir Malevič - Černý čtverec
+"<img alt=""Mystic Suprematism černý kříž na červeném oválu"" src=""Kazimir Malevich -  Mystic Suprematism black cross on red ovaln - (MeisterDrucke-349401).jpg"">"	Kazimir Malevič - Černý kříž
+"<img alt=""Suprematistická kompozice: Bílá na bílém, 1918"" src=""Kazimir_Severinovich_Malevich_-_Suprematist_Composition_White_on_White_1918_-_(MeisterDrucke-635264).jpg"">"	Kazimir Malevič - Bílí čtverec na bílém pozadí
+"<img alt=""Složitá předtucha. Torzo ve žluté košili (Complicated Premonition. Torso in  a Yellow Shirt). Obraz Kazimira Severinoviče Maleviče (Malevich, Malevic)  (1878-1935), olej na plátně"" src=""Kazimir_Severinovich_Malevich_-_Premonition_compliquee_Torse_dans_une_chemise_jaune_(Complicated_Premonition_Tor_-_.jpg"">"	Kazimir Malevič - Složitá předtucha
+"<img alt=""Červený strom"" src=""Piet Mondrian - Red Tree  - (MeisterDrucke-32633).jpg""><img alt=""Šedý strom, 1911"" src=""Piet Mondrian - The Gray Tree 1911  - (MeisterDrucke-557467).jpg"">"	Piet Mondrian - Stromy
+"<img alt=""Piet Mondrian: Kompozice v červené, žluté, modré a černé | Abstraktní |  Kubismus | Obrazy, reprodukce obrazů, fotografie"" src=""8136.webp"">"	Piet Mondrian - Kompozice
+"<img alt=""Abstraktní Piet Mondrian Styl Obrazu Vyrobené Softwaru Stock ilustrace  ©fermagafe #4972604"" src=""depositphotos_4972604-stock-illustration-abstract-piet-mondrian-style-image.jpg"">"	Piet Mondrian - Kompozice s červenou a modrou abstrakce 3D
+"<img alt=""František Kupka - Vlastní podobizna | Národní galerie Praha - sbírky"" src=""CZE_NG.O_3809.jpeg"">"	František Kupka -&nbsp; Autoportrét
+"<img alt=""Knihomol - František Kupka (1871 – 1957) | 1. Art Consulting"" src=""201.jpg"">"	František Kupka -&nbsp; Knihomol
+"<img alt=""České Umění on X: &quot;František Kupka - Autoportrét s manželkou - 1908  https://t.co/ErUfhOO0cg&quot; / X"" src=""DioG418X0AE9neG.jpglarge"">"	František Kupka -&nbsp; Autoportrét se ženou
+"<img alt=""František Kupka - Amorfa. Dvoubarevná fuga | Národní galerie Praha - sbírky"" src=""CZE_NG.O_5942.jpeg"">"	František Kupka -&nbsp; Amorfa
+"<img alt=""František Kupka: Amorfa. Teplá chromatika - Aktuálně.cz"" src=""18d7e045d5bc3f038fc74d8f3c192485_resize=768,772_.jpg"">"	františek kupka Teplá chromatika
+"<img alt=""Vladimír Boudník, Aktivní grafika (Horizontály a vertikály, Stopy materiálu),  1959-1966 -"" src=""aHR0cHM6Ly9zMy5ldS1jZW50cmFsLTEuYW1hem9uYXdzLmNvbS91cGxvYWRzLm1hbmdvd2ViLm9yZy9hcnRtYXAvcHJvZC91cGxvYWRzLzIwMTkvMDQ.jpg""><img alt=""Vladimír Boudník – Stopy materiálů (Stopy nástrojů) | Web umenia"" src=""600.jpg"">"	Vladimír boudník - Stopy materiálu
+"<img alt=""Kdo je (byl) Vladimír Boudník? - Babylon"" src=""3-Boudník.strukt.-grafika.jpg"">"	Vladimír boudník - Babylon
+"<img alt=""Jan Vyleťal / Geometrická kompozice - detail aukce « Aukce « Aukční Galerie  Platýz"" src=""1753-jan-vyletal-geometricka-kompozice-1753-58.jpg"">"	Jan Vyleťal geometrická kompozice
+"<img alt=""Jan Vyleťal (1940 - 2013) - NEJVYŠŠÍ INTELIGENCE VE VESMÍRU - Lot 170 |  VEČERNÍ AUKCE 2020 | Výstavy a aukce | Arthouse Hejtmánek"" src=""0015019_1600x0_0.jpg"">"	Jan Vyleťal Najvyšší inteligence ve vesmíru
+"<img alt=""Sýkorovy letenské dlaždičky jsou výřezem z nekonečna - iDNES.cz"" src=""EFL2968a7_foto_letna_02.jpg"">"	Zdeněk Sýkora - Mozaik obklady větracích komínů
+"<img alt=""Top 10 Sýkora | Artplus.cz"" src=""Sykora04-Linie100.jpg"">"	Zdeněk Sýkora - linie č100
+"<img alt=""Velký bílý kabát"" src=""71f6c0543f72dbcb0ba83965fc1dd4f25b2368e24cedf.jpg"">"	věra janoušková bílí kabát
+"<img alt=""Vernisáž Věra Janoušková &amp; Vladimír Janoušek: Kristus a kyvadlo - Martin  Fryč"" src=""images.jpg"">"	věra janoušková Kristus a kyvadlo
+"<img alt=""Věra Janoušková, Figura, polovina sedmdesátých let 20. století • Museum  Kampa"" src=""Janoušková-e1567001671746.jpg"">"	věra janoušková figura

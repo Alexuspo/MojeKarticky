@@ -646,3 +646,16 @@ footer {
     max-height: 200px;
     overflow: auto;
 }
+
+/* Skrytí nechtěných prvků pomocí CSS */
+.unwanted-text,
+*:contains('Studovat Resetovat Smazat') {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    pointer-events: none !important;
+}

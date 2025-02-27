@@ -1,9 +1,10 @@
-# Kartičky ve formátu TXT
+# Textové soubory s kartičkami
 
-Do této složky umístěte textové soubory obsahující vaše kartičky.
-Textový soubor musí mít strukturu použitou při exportu z Anki, kde sloupce jsou odděleny tabulátorem.
+V této složce jsou umístěny textové soubory s definicemi kartiček.
 
-Příklad struktury:
+## Formát souborů
+
+Soubory mají následující strukturu:
 ```
 #separator:tab
 #html:true

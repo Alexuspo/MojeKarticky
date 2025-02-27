@@ -194,11 +194,62 @@ function showToast(message, type = 'info') {
     }, 5000);
 }
 
+// Pomocná funkce pro okamžité odstranění nechtěného textu
+function removeUnwantedTextImmediately() {
+    // CSS pravidlo pro skrytí textu
+    const style = document.createElement('style');
+    style.textContent = `
+        .unwanted-text, 
+        *:not(script):not(style):not(link):not(meta):empty,
+        *[data-unwanted="true"] { 
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important; 
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Funkce pro odstranění textu
+    function cleanText() {
+        const allElements = document.querySelectorAll('body *');
+        allElements.forEach(el => {
+            if (el.childNodes && el.childNodes.length > 0) {
+                el.childNodes.forEach(child => {
+                    if (child.nodeType === Node.TEXT_NODE && child.textContent.includes('Studovat Resetovat Smazat')) {
+                        el.setAttribute('data-unwanted', 'true');
+                        child.textContent = child.textContent.replace(/Studovat\s*Resetovat\s*Smazat/g, '');
+                    }
+                });
+            }
+        });
+    }
+    
+    // Spustit okamžitě
+    cleanText();
+    
+    // Spustit znovu po načtení stránky
+    window.addEventListener('load', cleanText);
+    
+    // Spustit znovu po každé změně DOM (s omezením frekvence)
+    let timeout;
+    const observer = new MutationObserver(() => {
+        clearTimeout(timeout);
+        timeout = setTimeout(cleanText, 100);
+    });
+    
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true
+    });
+}
+
 // Spustit inicializační funkce
 document.addEventListener('DOMContentLoaded', function() {
     checkStylesheets();
     cleanupLocalStorage();
     initDefaultSettings();
     setupEmergencyCardReset();
+    removeUnwantedTextImmediately(); // Přidáno: okamžité odstranění textu
     checkServerConnection();
 });

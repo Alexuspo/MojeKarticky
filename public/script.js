@@ -762,34 +762,101 @@ function moveToNextCard(rating) {
 
     // Odstranění nepotřebných UI prvků
     function removeUnwantedElements() {
-        // Odstraní zbytečný text "Studovat Resetovat Smazat" pokud se objeví na stránce
+        // Okamžité odstranění textu po načtení stránky
+        removeUnwantedText();
+        
+        // Odstraní zbytečný text "Studovat Resetovat Smazat" odkudkoli na stránce
         const observer = new MutationObserver((mutations) => {
+            let needsCleanup = false;
+            
             mutations.forEach((mutation) => {
                 if (mutation.type === 'childList' && mutation.addedNodes.length) {
                     mutation.addedNodes.forEach((node) => {
                         if (node.nodeType === Node.TEXT_NODE && 
                             node.textContent.includes('Studovat Resetovat Smazat')) {
-                            node.textContent = node.textContent.replace('Studovat Resetovat Smazat', '');
+                            node.textContent = node.textContent.replace(/Studovat\s*Resetovat\s*Smazat/g, '');
+                            needsCleanup = true;
                         }
                         
                         if (node.nodeType === Node.ELEMENT_NODE) {
-                            const textNodes = [...node.childNodes].filter(n => 
-                                n.nodeType === Node.TEXT_NODE && 
-                                n.textContent.includes('Studovat Resetovat Smazat'));
+                            // Rekurzivně hledat všechny textové uzly v elementu a jeho potomcích
+                            const walker = document.createTreeWalker(
+                                node,
+                                NodeFilter.SHOW_TEXT,
+                                null,
+                                false
+                            );
                             
-                            textNodes.forEach(textNode => {
-                                textNode.textContent = textNode.textContent.replace('Studovat Resetovat Smazat', '');
-                            });
+                            let textNode;
+                            while (textNode = walker.nextNode()) {
+                                if (textNode.textContent.includes('Studovat Resetovat Smazat')) {
+                                    textNode.textContent = textNode.textContent.replace(/Studovat\s*Resetovat\s*Smazat/g, '');
+                                    needsCleanup = true;
+                                }
+                            }
                         }
                     });
                 }
             });
+            
+            // Pokud byl nalezen a odstraněn nechtěný text, zkusit ještě jednou celou stránku
+            if (needsCleanup) {
+                removeUnwantedText();
+            }
         });
         
-        // Sledovat změny v celém dokumentu
+        // Sledovat změny v celém dokumentu včetně atributů a obsahu textových uzlů
         observer.observe(document.body, { 
             childList: true, 
-            subtree: true 
+            subtree: true,
+            characterData: true, 
+            attributes: true 
+        });
+    }
+    
+    // Pomocná funkce pro agresivnější odstranění nechtěného textu z celého dokumentu
+    function removeUnwantedText() {
+        console.log("Hledám a odstraňuji nechtěný text...");
+        
+        // 1. Odstranit z textových uzlů
+        const textWalker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+        
+        const nodesToProcess = [];
+        let textNode;
+        
+        while (textNode = textWalker.nextNode()) {
+            if (textNode.textContent.includes('Studovat Resetovat Smazat')) {
+                nodesToProcess.push(textNode);
+            }
+        }
+        
+        // Zpracovat nashromážděné uzly (abychom nezasahovali do TreeWalkeru během iterace)
+        nodesToProcess.forEach(node => {
+            node.textContent = node.textContent.replace(/Studovat\s*Resetovat\s*Smazat/g, '');
+        });
+        
+        // 2. Speciální kontrola konkrétních elementů, které by mohly obsahovat tento text
+        const suspiciousElements = document.querySelectorAll('.deck-card, .card-side, .flashcard, .controls');
+        suspiciousElements.forEach(element => {
+            let innerHTML = element.innerHTML;
+            if (innerHTML.includes('Studovat') && innerHTML.includes('Resetovat') && innerHTML.includes('Smazat')) {
+                element.innerHTML = innerHTML.replace(/Studovat\s*Resetovat\s*Smazat/g, '');
+            }
+        });
+        
+        // 3. Přímé vyhledání a odstranění konkrétního elementu, který má tento text
+        const allElements = document.querySelectorAll('*');
+        allElements.forEach(element => {
+            if (element.childNodes.length === 1 && 
+                element.firstChild.nodeType === Node.TEXT_NODE &&
+                element.firstChild.textContent.trim() === 'Studovat Resetovat Smazat') {
+                element.remove();
+            }
         });
     }
 
