@@ -77,10 +77,6 @@ app.get('/api/decks/:id', (req, res) => {
                 const abstraktDeck = createAbstractArtDeck();
                 logInfo(`Vracím alternativní balíček abstraktního umění: ${abstraktDeck.name}`);
                 return res.json(abstraktDeck);
-            } else if (deckId.includes('histor')) {
-                const historyDeck = createHistoryDeck();
-                logInfo(`Vracím alternativní balíček historie: ${historyDeck.name}`);
-                return res.json(historyDeck);
             }
             
             // Pokud všechno selže, vrátit první balíček
@@ -179,7 +175,6 @@ function getStaticDecks() {
     const staticDecks = [];
     staticDecks.push(createLiteraturaDeck());
     staticDecks.push(createAbstractArtDeck());
-    staticDecks.push(createHistoryDeck());
     
     return staticDecks;
 }
@@ -264,38 +259,6 @@ function createAbstractArtDeck() {
     return {
         id: "abstraktni_umeni_hardcoded",
         name: "Abstraktní umění - 20 kartiček",
-        cards: cardsWithId,
-        created: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
-        source: 'hardcoded',
-        format: 'plain'
-    };
-}
-
-// Vytvoření balíčku Historie
-function createHistoryDeck() {
-    const cards = [
-        { front: "Kdy byla bitva na Bílé hoře?", back: "8. listopadu 1620" },
-        { front: "Kdo byl prvním československým prezidentem?", back: "Tomáš Garrigue Masaryk" },
-        { front: "Ve kterém roce vznikla první Československá republika?", back: "1918" },
-        { front: "Datum sametové revoluce", back: "17. listopadu 1989" },
-        { front: "Jak dlouho trvala třicetiletá válka?", back: "1618-1648" },
-        { front: "Kdy byl založen první koncentrační tábor na českém území?", back: "1941 - Terezín" },
-        { front: "Kdo byl atentátníkem na následníka trůnu Františka Ferdinanda d'Este?", back: "Gavrilo Princip" },
-        { front: "Ve kterém roce vstoupila ČR do EU?", back: "2004" }
-    ];
-    
-    // Přidat ID ke každé kartě
-    const cardsWithId = cards.map((card, index) => ({
-        id: `historie${index}`,
-        front: card.front,
-        back: card.back,
-        tags: ['historie']
-    }));
-    
-    return {
-        id: "historie_hardcoded",
-        name: "Historie ČR",
         cards: cardsWithId,
         created: new Date().toISOString(),
         lastModified: new Date().toISOString(),
