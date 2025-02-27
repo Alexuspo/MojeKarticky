@@ -453,16 +453,24 @@ footer {
 /* Styly pro obrázky v kartičkách */
 .card-side img {
     max-width: 100%;
-    max-height: 200px;
+    max-height: 350px;
     margin: 10px auto;
     display: block;
     border-radius: 4px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    object-fit: contain;
 }
 
 /* Zvětšit výšku kartiček s obrázky */
 .flashcard.has-image .card-side {
     min-height: 450px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+    padding: 15px;
 }
 
 /* Indikátor načítání obrázku */
@@ -658,4 +666,20 @@ footer {
     overflow: hidden !important;
     position: absolute !important;
     pointer-events: none !important;
+}
+
+/* Speciální úprava pro obrazovou galerii */
+.abstract-art-gallery .card-front {
+    background-color: #f8f8f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.abstract-art-gallery .card-back {
+    font-size: 18px;
+    line-height: 1.6;
+    padding: 20px;
+    color: #333;
+    background-color: #f0f9ff;
 }

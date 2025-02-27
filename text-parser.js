@@ -80,6 +80,12 @@ function parseTextFile(filePath) {
         if (!fs.existsSync(filePath)) {
             console.warn(`Soubor ${filePath} neexistuje`);
             
+            // Speciální zpracování pro abstraktní umění s obrázky
+            if (filePath.toLowerCase().includes('abstrakt') && filePath.toLowerCase().includes('obrazk')) {
+                console.log('Generuji náhradní balíček abstraktního umění s obrázky');
+                return createAbstractArtImagesDeck();
+            }
+            
             // Speciální zpracování pro abstraktní umění
             if (filePath.toLowerCase().includes('abstrakt')) {
                 console.log('Generuji náhradní balíček abstraktního umění');
@@ -93,9 +99,12 @@ function parseTextFile(filePath) {
         const fileContent = fs.readFileSync(filePath, 'utf8');
         console.log(`Soubor načten, velikost: ${fileContent.length} bajtů`);
         
-        // Detekovat, zda jde o balíček abstraktního umění
-        if (filePath.toLowerCase().includes('abstrakt')) {
-            console.log('Detekován soubor abstraktního umění, pokusím se zpracovat');
+        // Detekovat, zda jde o balíček abstraktního umění s obrázky
+        if (filePath.toLowerCase().includes('abstrakt') && 
+            (filePath.toLowerCase().includes('obrazk') || fileContent.includes('images/')) && 
+            fileContent.includes('<img')) {
+            console.log('Detekován soubor abstraktního umění s obrázky, použiju speciální zpracování');
+            return parseAbstractArtWithImages(filePath, fileContent);
         }
         
         const lines = fileContent.split('\n');
@@ -244,6 +253,12 @@ function parseTextFile(filePath) {
     } catch (error) {
         console.error('Chyba při parsování textového souboru:', error);
         
+        // Pokud jde o abstraktní umění s obrázky, vygenerovat náhradní balíček
+        if (filePath.toLowerCase().includes('abstrakt') && filePath.toLowerCase().includes('obrazk')) {
+            console.log('Přes chybu generuji náhradní balíček abstraktního umění s obrázky');
+            return createAbstractArtImagesDeck();
+        }
+        
         // Pokud jde o abstraktní umění, vygenerovat náhradní balíček
         if (filePath.toLowerCase().includes('abstrakt')) {
             console.log('Přes chybu generuji náhradní balíček abstraktního umění');
@@ -251,6 +266,122 @@ function parseTextFile(filePath) {
         }
         
         return null;
+    }
+}
+
+/**
+ * Speciálně zpracuje soubor s abstraktním uměním obsahujícím obrázky
+ * @param {string} filePath - Cesta k souboru
+ * @param {string} fileContent - Obsah souboru
+ * @returns {Object} - Balíček kartiček
+ */
+function parseAbstractArtWithImages(filePath, fileContent) {
+    try {
+        console.log('Speciální parsování souboru abstraktního umění s obrázky');
+        
+        const fileName = path.basename(filePath, '.txt');
+        let deckName = fileName;
+        let separator = '\t'; // Výchozí oddělovač je tabulátor
+        let isHtml = true;    // Pro abstraktní umění s obrázky vždy HTML
+        
+        // Analýza hlaviček
+        const lines = fileContent.split('\n');
+        const headerLines = lines.filter(line => line.startsWith('#'));
+        
+        for (const headerLine of headerLines) {
+            const headerParts = headerLine.substring(1).split(':');
+            if (headerParts.length >= 2) {
+                const key = headerParts[0].trim().toLowerCase();
+                const value = headerParts.slice(1).join(':').trim();
+                
+                if (key === 'name') {
+                    deckName = value;
+                }
+                if (key === 'separator') {
+                    separator = value === 'tab' ? '\t' : value;
+                }
+            }
+        }
+        
+        console.log(`Název balíčku: ${deckName}, oddělovač: ${separator === '\t' ? 'tab' : separator}`);
+        
+        // Získání obsahových řádků
+        const contentLines = lines.filter(line => line.trim() && !line.startsWith('#'));
+        const cards = [];
+        
+        for (let i = 0; i < contentLines.length; i++) {
+            const line = contentLines[i].trim();
+            if (!line) continue;
+            
+            // Rozdělení podle tabulátoru - první část je obrázek, druhá popis
+            const parts = line.split(separator);
+            
+            if (parts.length < 2) {
+                console.log(`Řádek ${i+1} nemá dostatečný počet částí, přeskakuji: ${line.substring(0,30)}...`);
+                continue;
+            }
+            
+            // Prvky zpracovat jako HTML
+            let front = parts[0] ? parts[0].trim() : '';
+            let back = parts[1] ? parts[1].trim() : '';
+            
+            // Odstranění uvozovek, které někdy vznikají při exportu
+            front = front.replace(/^"(.*)"$/, '$1');
+            back = back.replace(/^"(.*)"$/, '$1');
+            
+            // Ujistit se, že cesty k obrázkům jsou správné
+            if (front.includes('<img') && !front.includes('src="images/')) {
+                front = front.replace(/src=["']([^"']+)["']/g, (match, src) => {
+                    return `src="images/${path.basename(src)}"`;
+                });
+            }
+            
+            // Přidání stylu pro maximální výšku, pokud tam není
+            if (!front.includes('style="max-height:') && front.includes('<img')) {
+                front = front.replace(/<img/g, '<img style="max-height: 300px;"');
+            }
+            
+            // Vygenerovat ID pro kartičku
+            const cardId = crypto.createHash('md5')
+                .update(`abstract_art_image_${i}_${front}`)
+                .digest('hex')
+                .substring(0, 8);
+            
+            cards.push({
+                id: cardId,
+                front: front,
+                back: back,
+                tags: ['umeni', 'abstraktni', 'obrazky']
+            });
+            
+            console.log(`Přidávám kartičku ${i+1}: ${front.substring(0, 30)}... => ${back.substring(0, 30)}...`);
+        }
+        
+        console.log(`Vytvořeno ${cards.length} kartiček abstraktního umění s obrázky`);
+        
+        // Pokud nebyly nalezeny žádné kartičky, zkusit záložní metodu
+        if (cards.length === 0) {
+            return createAbstractArtImagesDeck();
+        }
+        
+        // Vytvořit balíček
+        const deckId = crypto.createHash('md5')
+            .update(`abstract_art_images_${deckName}_${new Date().toISOString()}`)
+            .digest('hex')
+            .substring(0, 8);
+        
+        return {
+            id: deckId,
+            name: deckName || "Abstraktní umění - obrazová galerie",
+            cards: cards,
+            created: new Date().toISOString(),
+            lastModified: new Date().toISOString(),
+            source: 'textfile',
+            format: 'html'
+        };
+    } catch (error) {
+        console.error('Chyba při zpracování abstraktního umění s obrázky:', error);
+        return createAbstractArtImagesDeck(); // Vrátit záložní balíček
     }
 }
 
@@ -414,6 +545,51 @@ function createAbstractArtDeck() {
 }
 
 /**
+ * Vytvoří hardcoded balíček pro abstraktní umění s obrázky
+ * @returns {Object} - Balíček abstraktní umění s obrázky
+ */
+function createAbstractArtImagesDeck() {
+    console.log('Vytvářím hardcoded balíček abstraktního umění s obrázky');
+    
+    const cards = [
+        {
+            front: '<img alt="Barevná studie. Čtverce se soustřednými kruhy, 1913." src="images/Wassily_Kandinsky_-_Color_Study_Squares_with_Concentric_Circles_1913_-_(MeisterDrucke-1185849).jpg" style="max-height: 300px;">',
+            back: 'Vasilij Kandinskij - Soustředné Kruhy (1913). Jeden z nejznámějších obrazů tohoto průkopníka abstraktního umění.'
+        },
+        {
+            front: '<img alt="Černý čtverec" src="images/800px-Чёрный_супрематический_квадрат._1915._ГТГ.png" style="max-height: 300px;">',
+            back: 'Kazimir Malevič - Černý čtverec na bílém pozadí (1915). Ikona suprematismu a klíčové dílo abstraktního umění 20. století.'
+        },
+        {
+            front: '<img alt="František Kupka - Amorfa. Dvoubarevná fuga" src="images/CZE_NG.O_5942.jpeg" style="max-height: 300px;">',
+            back: 'František Kupka - Amorfa: Dvoubarevná fuga (1912). Jedno z prvních plně abstraktních děl v historii malířství.'
+        },
+        {
+            front: '<img alt="Piet Mondrian: Kompozice v červené, žluté, modré a černé" src="images/8136.webp" style="max-height: 300px;">',
+            back: 'Piet Mondrian - Kompozice v červené, žluté, modré a černé. Typické dílo neoplasticismu používající pouze základní barvy a pravoúhlé tvary.'
+        }
+    ];
+    
+    // Přidat ID ke každé kartě
+    const cardsWithId = cards.map((card, index) => ({
+        id: `abstrakt_obrazky_${index}`,
+        front: card.front,
+        back: card.back,
+        tags: ['umeni', 'abstraktni', 'obrazky']
+    }));
+    
+    return {
+        id: "abstraktni_umeni_obrazky_hardcoded",
+        name: "Abstraktní umění - obrazová galerie",
+        cards: cardsWithId,
+        created: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+        source: 'hardcoded',
+        format: 'html'
+    };
+}
+
+/**
  * Získá statické balíčky kartiček pro serverless prostředí (jako Vercel.app)
  * @returns {Array} - Pole balíčků kartiček
  */
@@ -441,6 +617,7 @@ module.exports = {
     getLiteraturaFromTextFile,
     createHardcodedDeck,
     createAbstractArtDeck,
+    createAbstractArtImagesDeck,
     processCardContentWithMedia,
     getStaticDecks
 };
