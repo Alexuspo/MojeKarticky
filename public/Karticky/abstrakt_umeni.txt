@@ -1,0 +1,24 @@
+#separator:tab
+#html:true
+#name:Abstraktní umění - 20 kartiček
+
+Kdy byl vytvořen první abstraktní obraz?	V roce 1910.
+Kdo je považován za tvůrce prvního abstraktního akvarelu?	Vasilij Kandinskij (vytvořil ho údajně náhodou, když otočil svůj obraz).
+Jaké jsou klíčové znaky abstraktního umění?	Nefigurativnost, soustředění na výtvarné prostředky (linie, tvar, barva, plocha), vyjádření emocí čistě výtvarnými prvky.
+Z jakých uměleckých směrů se vyvinulo abstraktní umění?	Ze symbolismu, fauvismu, expresionismu a zejména kubismu, který rozkladem forem vytvořil předpoklady pro opuštění předmětnosti.
+Kdo byl František Kupka a jaká byla jeho role v abstraktním umění?	Český malíř, grafik a ilustrátor, jeden z průkopníků abstraktního umění, který v roce 1912 vystavoval abstraktní obrazy na Podzimním salónu v Paříži.
+Co je suprematismus a kdo je jeho zakladatelem?	Ruský směr založený Kazimimem Malevičem, používající jednoduché geometrické tvary a omezený počet barev. Název odkazuje k latínskému "supremus" (nejvyšší).
+Jaké je nejznámější dílo Kazimira Maleviče?	Černý čtverec na bílém pozadí (1915).
+Co je neoplasticismus (De Stijl) a jaké jsou jeho hlavní znaky?	Holandský směr usilující o absolutní čistotu výrazu. Používá jen vodorovné a svislé čáry, pravé úhly a základní barvy (červená, modrá, žlutá) plus černá, bílá a šedá.
+Která díla patří mezi klíčová v tvorbě Františka Kupky?	Amorfa - Dvoubarevná fuga, Amorfa - Teplá chromatika, Klávesy piana, Vertikální plány, Tryskání II.
+Co je orfismus a jak souvisí s hudbou?	Směr odvozený od kubismu, zdůrazňující barevnost a rytmus, inspirovaný hudbou. Název odkazuje k mytickému hudebníkovi Orfeovi.
+Kteří umělci byli hlavními představiteli orfismu?	Robert Delaunay, František Kupka a Francis Picabia.
+Ve kterém období se rozvíjela druhá vlna abstrakce a kde?	1945-1960, zejména v USA a západní Evropě.
+Který český umělec byl průkopníkem počítačového umění v rámci abstrakce?	Zdeněk Sýkora (od 60. let využíval počítač pro tvorbu struktur a linií).
+Jaký byl význam abstraktního umění pro vývoj umění 20. století?	Osvobození umění od povinnosti napodobovat realitu, důraz na vlastní výrazové prostředky, propojení s ostatními druhy umění, vliv na architekturu a design.
+Jaká byla inspirace pro Pieta Mondriana při tvorbě jeho pozdějších děl?	Jazzová hudba (série Boogie Woogie).
+Co je rayonismus (lučismus) a kdo byli jeho hlavní představitelé?	Ruský směr zaměřený na zachycení světelných paprsků a pohyb mimo čas a prostor. Hlavní představitelé byli Michail Larionov a Natalie Gončarovová.
+Jakými fázemi prošla tvorba Kazimira Maleviče během jeho umělecké kariéry?	Od nabismu přes futurismus a kubismus k suprematismu, později architektura a nakonec návrat k figurální malbě s uniformními postavami bez tváří.
+Co spojovalo Mikalojuse Konstantinase Čiurlionise s abstraktním uměním?	Byl synestetik - propojoval hudbu a výtvarné umění, jeho dílo předjímalo abstraktní umění díky důrazu na barvu, rytmus a stylizovanou formu.
+Která díla patří mezi nejvýznamnější práce Pieta Mondriana?	Kompozice se žlutou, modrou a červenou, Broadway Boogie Woogie, série Stromů (ukazující vývoj od realismu k abstrakci).
+Jak se abstraktní umění inspirovalo hudbou?	Abstraktní povaha zvuků a jejich rytmické uspořádání poskytly model pro nereprezentativní umění, kde rytmus, harmonie a kompozice fungují podobně jako v hudbě.
